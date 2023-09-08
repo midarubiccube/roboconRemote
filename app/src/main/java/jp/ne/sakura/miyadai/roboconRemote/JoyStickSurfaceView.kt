@@ -53,7 +53,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var stickHeight = 0
     private var positionX = 0
     private var positionY = 0
-    var minimumDistance = 0
+    var minimumDistance = 100
     private var distance = 0f
     private var angle = 0f
     private val jsEntity // joy stick entity
@@ -189,7 +189,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         stickAlpha = ALPHA_STICK_DEFAULT
         setSignalAlpha(ALPHA_SIGNAL_DEFAULT)
         offset = params!!.width / DENO_RATE_OFFSET_TO_PAD
-        minimumDistance = params!!.width / DENO_RATE_MIN_DISTANCE_TO_PAD
+        //minimumDistance = params!!.width / DENO_RATE_MIN_DISTANCE_TO_PAD
         resizeImages()
     }
 
@@ -312,7 +312,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
     private fun performOnJoyStickMove() {
         if (onJoyStickMoveListener != null) onJoyStickMoveListener!!.onValueChanged(
-            getAngle(), getDistance(),
+            angle, getDistance(),
             getStickState()
         )
     }
@@ -408,7 +408,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         } else if (event.action == MotionEvent.ACTION_MOVE && jsEntity.isTouched()) {
             if (distance <= midDistanceX) {
                 jsEntity.position(event.x, event.y)
-                drawSignal(canvas)
             } else if (distance > midDistanceX) {
                 var x = (cos(
                     Math.toRadians(
@@ -429,7 +428,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
                 x += (params!!.width / 2).toFloat()
                 y += (params!!.height / 2).toFloat()
                 jsEntity.position(x, y)
-                drawDarkenSignal(canvas)
             } else {
                 // reset stick pad
 //                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
@@ -460,36 +458,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         canvas.drawBitmap(background!!, 0f, 0f, alphaBacksPaint)
     }
 
-    private fun drawSignal(canvas: Canvas) {
-        if (!canUseSignal) return
-        when (stickState) {
-            JoyStick.MORE_UP, JoyStick.UP -> canvas.drawBitmap(
-                signalUp!!, 0f, 0f, alphaSigPaint
-            )
-
-            JoyStick.MORE_RIGHT, JoyStick.RIGHT -> canvas.drawBitmap(
-                signalRight!!, 0f, 0f, alphaSigPaint
-            )
-
-            JoyStick.MORE_DOWN, JoyStick.DOWN -> canvas.drawBitmap(
-                signalDown!!, 0f, 0f, alphaSigPaint
-            )
-
-            JoyStick.MORE_LEFT, JoyStick.LEFT -> canvas.drawBitmap(
-                signalLeft!!, 0f, 0f, alphaSigPaint
-            )
-            else -> canvas.drawBitmap(
-                signalLeft!!, 0f, 0f, alphaSigPaint
-            )
-        }
-    }
-
-    private fun drawDarkenSignal(canvas: Canvas) {
-        drawSignal(canvas)
-        drawSignal(canvas)
-        drawSignal(canvas)
-    }
-
     val posX: Int
         get() = if (distance > minimumDistance && jsEntity.isTouched()) {
             positionX
@@ -501,16 +469,8 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
             } else 0
         }
 
-    fun getAngle(): Float {
-        return if (distance > minimumDistance && jsEntity.isTouched()) {
-            angle
-        } else 0f
-    }
-
-    fun getDistance(): Float {
-        return if (distance > minimumDistance && jsEntity.isTouched()) {
-            distance
-        } else 0f
+    private fun getDistance(): Float {
+        return if (distance < minimumDistance) distance else 100f
     }
 
     var layoutAlpha: Int
