@@ -6,15 +6,16 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import com.longdo.mjpegviewer.MjpegView
 import okio.ByteString.Companion.toByteString
+import okhttp3.WebSocket
 import kotlin.Float
 
 class MainActivity : ComponentActivity() {
     var isconnect : Boolean = false
-
+    lateinit var webSocketClient : WebSocketClient
     val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val webSocketClient = WebSocketClient(this, applicationContext)
+        webSocketClient = WebSocketClient(this, applicationContext)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -54,6 +55,18 @@ class MainActivity : ComponentActivity() {
         })
 
     }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("stop", "stop")
+        webSocketClient.close()
+    }
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("restart", "restart")
+        webSocketClient.connect()
+    }
+
 }
 
 

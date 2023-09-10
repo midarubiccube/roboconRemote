@@ -11,7 +11,7 @@ import okio.ByteString
 import java.util.concurrent.TimeUnit
 
 class WebSocketClient(activity: MainActivity, private val context: Context) : WebSocketListener() {
-        private val ws: WebSocket
+        private var ws: WebSocket
         private val activity : MainActivity = activity
 
     init {
@@ -34,6 +34,23 @@ class WebSocketClient(activity: MainActivity, private val context: Context) : We
             ws.send(message)
         }
 
+        fun close() {
+            ws.close(1000, null)
+        }
+
+        fun connect()
+        {
+            val client = OkHttpClient.Builder().pingInterval(5, TimeUnit.SECONDS).build()
+
+            // 接続先のエンドポイント
+            // localhostとか127.0.0.1ではないことに注意
+            val request = Request.Builder()
+                .url("ws://192.168.0.20:8765")
+                .build()
+
+            ws = client.newWebSocket(request, this)
+        }
+
         override fun onOpen(webSocket: WebSocket, response: Response) {
             println("WebSocket opened successfully")
         }
@@ -53,6 +70,7 @@ class WebSocketClient(activity: MainActivity, private val context: Context) : We
             webSocket.close(1000, null)
             println("Connection closed: $code $reason")
         }
+
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             println("Connection failed: ${t.localizedMessage}")
             activity.isconnect = false
