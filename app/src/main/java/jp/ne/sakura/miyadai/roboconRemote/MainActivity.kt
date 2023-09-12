@@ -12,6 +12,7 @@ import kotlin.Float
 class MainActivity : ComponentActivity() {
     var isconnect : Boolean = false
     lateinit var webSocketClient : WebSocketClient
+    lateinit var viewer : MjpegView
     val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,12 +21,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val viewer = findViewById<View>(R.id.mjpeg_view) as MjpegView
+        viewer = findViewById<View>(R.id.mjpeg_view) as MjpegView
         viewer.mode = MjpegView.MODE_FIT_WIDTH
         viewer.isAdjustHeight = true
         viewer.supportPinchZoomAndPan = false
         viewer.setUrl(STREAM_URL)
-        viewer.startStream()
 
         webSocketClient.send("Hello from Android")
 
@@ -61,14 +61,19 @@ class MainActivity : ComponentActivity() {
         Log.d("stop", "stop")
         webSocketClient.close()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("stop", "stop")
+        webSocketClient.close()
+    }
+
     override fun onRestart() {
         super.onRestart()
         Log.d("restart", "restart")
         webSocketClient.connect()
     }
-
 }
-
 
 fun Int.toByteArray(): ByteArray {
     val bytes = ByteArray(4)
