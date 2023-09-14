@@ -80,6 +80,7 @@ class WebSocketClient(activity: MainActivity, private val context: Context) : We
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
             webSocket.close(1000, null)
             println("Connection closed: $code $reason")
+            
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

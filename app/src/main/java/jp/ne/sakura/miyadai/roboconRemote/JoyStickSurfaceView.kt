@@ -312,7 +312,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
     private fun performOnJoyStickMove() {
         if (onJoyStickMoveListener != null) onJoyStickMoveListener!!.onValueChanged(
-            angle, getDistance(),
+            jsEntity.x, jsEntity.y,
             getStickState()
         )
     }
@@ -408,7 +408,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         } else if (event.action == MotionEvent.ACTION_MOVE && jsEntity.isTouched()) {
             if (distance <= midDistanceX) {
                 jsEntity.position(event.x, event.y)
-            } else if (distance > midDistanceX) {
+            } else {
                 var x = (cos(
                     Math.toRadians(
                         calAngle(
@@ -428,10 +428,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
                 x += (params!!.width / 2).toFloat()
                 y += (params!!.height / 2).toFloat()
                 jsEntity.position(x, y)
-            } else {
-                // reset stick pad
-//                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-//                drawBackground(canvas);
             }
         } else if (event.action == MotionEvent.ACTION_UP) {
             // reset stick pad
@@ -458,16 +454,10 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         canvas.drawBitmap(background!!, 0f, 0f, alphaBacksPaint)
     }
 
-    val posX: Int
-        get() = if (distance > minimumDistance && jsEntity.isTouched()) {
-            positionX
-        } else 0
+   /* val posX: Int
+        get() = jsEntity.y
     val posY: Int
-        get() {
-            return if (distance > minimumDistance && jsEntity.isTouched()) {
-                positionY
-            } else 0
-        }
+        get() = jsEntity.y*/
 
     private fun getDistance(): Float {
         return if (distance < minimumDistance) distance else 100f

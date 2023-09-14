@@ -34,8 +34,7 @@ class MainActivity : ComponentActivity() {
         joyStickSurfaceView.setOnJoyStickMoveListener(object : JoyStickSurfaceView.OnJoystickMoveListener {
             override fun onValueChanged(angle: Float, power: Float, state: JoyStickSurfaceView.JoyStick?) {
                 if (isconnect){
-                    webSocketClient.send(angle.toRawBits().toByteArray().toByteString())
-                    webSocketClient.send(power.toRawBits().toByteArray().toByteString())
+                    webSocketClient.send(annexation(angle.toRawBits(), power.toRawBits()).toByteString())
                 }
             }
         }, JoyStickSurfaceView.LOOP_INTERVAL_SLOW, JoyStickSurfaceView.LOOP_INTERVAL_FAST)
@@ -73,14 +72,19 @@ class MainActivity : ComponentActivity() {
         Log.d("restart", "restart")
         webSocketClient.connect()
     }
+    fun annexation(x : Int, y : Int): ByteArray {
+        val bytes = ByteArray(8)
+        bytes[0] = (x and 0xFF).toByte()
+        bytes[1] = ((x ushr 8) and 0xFF).toByte()
+        bytes[2] = ((x ushr 16) and 0xFF).toByte()
+        bytes[3] = ((x ushr 24) and 0xFF).toByte()
+        bytes[4] = (y and 0xFF).toByte()
+        bytes[5] = ((y ushr 8) and 0xFF).toByte()
+        bytes[6] = ((y ushr 16) and 0xFF).toByte()
+        bytes[7] = ((y ushr 24) and 0xFF).toByte()
+        return bytes
+    }
 }
 
-fun Int.toByteArray(): ByteArray {
-    val bytes = ByteArray(4)
-    bytes[0] = (this and 0xFF).toByte()
-    bytes[1] = ((this ushr 8) and 0xFF).toByte()
-    bytes[2] = ((this ushr 16) and 0xFF).toByte()
-    bytes[3] = ((this ushr 24) and 0xFF).toByte()
-    return bytes
-}
+
 
