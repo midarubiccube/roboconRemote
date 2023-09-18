@@ -4,15 +4,18 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.longdo.mjpegviewer.MjpegView
 import okio.ByteString.Companion.toByteString
-import okhttp3.WebSocket
-import kotlin.Float
+import java.util.Timer
+import java.util.TimerTask
+
 
 class MainActivity : ComponentActivity() {
     var isconnect : Boolean = false
     lateinit var webSocketClient : WebSocketClient
     lateinit var viewer : MjpegView
+    lateinit var joyStickSurfaceView: JoyStickSurfaceView
     val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +23,20 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
+
+        val timer = Timer()
+
+        timer.scheduleAtFixedRate(
+            object : TimerTask() {
+                override fun run() {
+                    if (isconnect) {
+                        webSocketClient.send(annexation(joyStickSurfaceView.getPosX().toRawBits(), joyStickSurfaceView.getPosY().toRawBits()).toByteString())
+                    }
+                }
+            }, 100, 80
+        )
 
         viewer = findViewById<View>(R.id.mjpeg_view) as MjpegView
         viewer.mode = MjpegView.MODE_FIT_WIDTH
@@ -29,13 +46,10 @@ class MainActivity : ComponentActivity() {
 
         webSocketClient.send("Hello from Android")
 
-        val joyStickSurfaceView = findViewById<JoyStickSurfaceView>(R.id.JoySticksurfaceView)
+
 
         joyStickSurfaceView.setOnJoyStickMoveListener(object : JoyStickSurfaceView.OnJoystickMoveListener {
             override fun onValueChanged(angle: Float, power: Float, state: JoyStickSurfaceView.JoyStick?) {
-                if (isconnect){
-                    webSocketClient.send(annexation(angle.toRawBits(), power.toRawBits()).toByteString())
-                }
             }
         }, JoyStickSurfaceView.LOOP_INTERVAL_SLOW, JoyStickSurfaceView.LOOP_INTERVAL_FAST)
 

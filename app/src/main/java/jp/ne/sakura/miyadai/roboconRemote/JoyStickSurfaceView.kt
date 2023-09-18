@@ -19,9 +19,6 @@ import android.view.ViewGroup
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * Created by rild on 2017/04/10.
- */
 class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback {
     private val RESID_STICK_DEFAULT: Int = R.drawable.s_joystick_stick
@@ -312,7 +309,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
     private fun performOnJoyStickMove() {
         if (onJoyStickMoveListener != null) onJoyStickMoveListener!!.onValueChanged(
-            jsEntity.x, jsEntity.y,
+            getPosX(), getPosY(),
             getStickState()
         )
     }
@@ -432,6 +429,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         } else if (event.action == MotionEvent.ACTION_UP) {
             // reset stick pad
             drawBaseCanvas(canvas)
+            jsEntity.position(0f,0f)
             jsEntity.setTouched(false)
         }
 
@@ -453,11 +451,18 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private fun drawBackground(canvas: Canvas) {
         canvas.drawBitmap(background!!, 0f, 0f, alphaBacksPaint)
     }
+    fun getPosX(): Float {
+        return if (jsEntity.isTouched()) {
+            (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6) * 128
 
-   /* val posX: Int
-        get() = jsEntity.y
-    val posY: Int
-        get() = jsEntity.y*/
+        } else 0f
+    }
+
+    fun getPosY(): Float {
+        return if (jsEntity.isTouched()) {
+            (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6) * 128
+        } else 0f
+    }
 
     private fun getDistance(): Float {
         return if (distance < minimumDistance) distance else 100f
