@@ -9,6 +9,9 @@ import com.longdo.mjpegviewer.MjpegView
 import okio.ByteString.Companion.toByteString
 import java.util.Timer
 import java.util.TimerTask
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +35,7 @@ class MainActivity : ComponentActivity() {
             object : TimerTask() {
                 override fun run() {
                     if (isconnect) {
-                        webSocketClient.send(annexation(joyStickSurfaceView.getPosX().toRawBits(), joyStickSurfaceView.getPosY().toRawBits()).toByteString())
+                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX(), joyStickSurfaceView.getPosY()).toByteString())
                     }
                 }
             }, 100, 80
@@ -86,6 +89,45 @@ class MainActivity : ComponentActivity() {
         Log.d("restart", "restart")
         webSocketClient.connect()
     }
+
+    private fun MakeSendData(posX : Float, posY : Float) : ByteArray {
+        val distance : Float =
+            sqrt(posX.toDouble().pow(2.0) + posY.toDouble().pow(2.0))
+                .toFloat()
+        val Xa = abs(posX)
+        val Ya = abs(posY)
+
+        val position : Array<Float> = arrayOf(posX, posY)
+
+        if (Xa < Ya) {
+            position[0] = position[0] * distance / Ya
+            position[1] = position[1] * distance / Ya
+        } else if (Xa > Ya) {
+            position[0] = position[0] * distance / Xa
+            position[1] = position[1] * distance / Xa
+        } else if (Xa == Ya) {
+            position[0] = position[0] * distance / Xa
+            position[1] = position[1] * distance / Ya
+        }
+        var pwm : Array<Int> = emptyArray();
+
+        pwm += (position[1] + position[0] + 0).toInt()
+        pwm += (position[1] - position[0] - 0).toInt()
+        pwm += (position[1] - position[0] + 0).toInt()
+        pwm += (position[1] + position[0] - 0).toInt()
+        pwm +=  (position[1] + 0).toInt()
+        pwm += (position[1] + 0).toInt()
+
+        val bytes = ByteArray(12)
+        val max_pwm = pwm.max()
+        for (i in 0..5){
+            bytes[i*2] =  if (249 < max_pwm) ((250 * abs(pwm[i]) / max_pwm )and 0xff).toByte() else (abs(pwm[i]) and 0xff).toByte()
+            bytes[i*2+1] =  if (pwm[i] < 0) 1  else 0
+        }
+
+        return bytes
+    }
+
     fun annexation(x : Int, y : Int): ByteArray {
         val bytes = ByteArray(8)
         bytes[0] = (x and 0xFF).toByte()
