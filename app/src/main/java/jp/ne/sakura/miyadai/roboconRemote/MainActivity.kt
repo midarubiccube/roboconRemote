@@ -49,27 +49,6 @@ class MainActivity : ComponentActivity() {
 
         webSocketClient.send("Hello from Android")
 
-
-
-        joyStickSurfaceView.setOnJoyStickMoveListener(object : JoyStickSurfaceView.OnJoystickMoveListener {
-            override fun onValueChanged(angle: Float, power: Float, state: JoyStickSurfaceView.JoyStick?) {
-            }
-        }, JoyStickSurfaceView.LOOP_INTERVAL_SLOW, JoyStickSurfaceView.LOOP_INTERVAL_FAST)
-
-        joyStickSurfaceView.setOnLongPushListener(object : JoyStickSurfaceView.OnLongPushListener {
-            override fun onLongPush() {
-                Log.d("MainEvent", "long pushed")
-            }
-        })
-
-        joyStickSurfaceView.setOnChangeStateListener(object : JoyStickSurfaceView.OnChangeStateListener {
-            override fun onChangeState(
-                next: JoyStickSurfaceView.JoyStick?,
-                previous: JoyStickSurfaceView.JoyStick?
-            ) {
-            }
-        })
-
     }
 
     override fun onPause() {
