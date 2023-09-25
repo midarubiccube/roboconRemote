@@ -1,5 +1,6 @@
 package jp.ne.sakura.miyadai.roboconRemote
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -39,7 +40,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var stickHeight = 0
     private var positionX = 0
     private var positionY = 0
-    var minimumDistance = 100
     private var distance = 0f
     private var angle = 0f
     private val jsEntity // joy stick entity
@@ -50,7 +50,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private val res: Resources
     private var background: Bitmap? = null
     private var stick: Bitmap? = null
-    private var threadJoyStickMove: Thread? = null
 
     init {
         if (!isInEditMode) setZOrderOnTop(true)
@@ -111,31 +110,12 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         stickHeight = stick!!.height
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun registerOnTouchEvent() {
-        setOnTouchListener(object : OnTouchListener {
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                drawJoyStickWith(event)
-                if (event.action == MotionEvent.ACTION_DOWN
-                    || event.action == MotionEvent.ACTION_MOVE
-                ) {
-                    if (distance <= minimumDistance && jsEntity.isTouched()) {
-                        // STICK_NONE;
-                        performReleaseJoyStick()
-                    }
-                } else {
-                    performReleaseJoyStick()
-                }
-                return true
-            }
-        })
-    }
-
-    private fun performReleaseJoyStick() {
-        interruptJoyStickMoveThread()
-    }
-
-    private fun interruptJoyStickMoveThread() {
-        if (threadJoyStickMove != null) threadJoyStickMove!!.interrupt()
+        setOnTouchListener { _, event ->
+            drawJoyStickWith(event)
+            true
+        }
     }
 
     private fun registerLayoutCenter(width: Int, height: Int) {
@@ -243,14 +223,14 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     }
     fun getPosX(): Float {
         return if (jsEntity.isTouched()) {
-            (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6) * 128
+            (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6)
 
         } else 0f
     }
 
     fun getPosY(): Float {
         return if (jsEntity.isTouched()) {
-            (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6) * 128
+            (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6)
         } else 0f
     }
 

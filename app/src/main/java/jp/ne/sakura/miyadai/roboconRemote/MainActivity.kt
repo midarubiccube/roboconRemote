@@ -3,8 +3,9 @@ package jp.ne.sakura.miyadai.roboconRemote
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.RadioGroup
+import android.widget.Switch
 import androidx.activity.ComponentActivity
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.longdo.mjpegviewer.MjpegView
 import okio.ByteString.Companion.toByteString
 import java.util.Timer
@@ -16,32 +17,51 @@ import kotlin.math.sqrt
 
 class MainActivity : ComponentActivity() {
     var isconnect : Boolean = false
+    private var speed : Int = 230
     lateinit var webSocketClient : WebSocketClient
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
-    val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
+    lateinit var Switch : Switch
+    private val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        webSocketClient = WebSocketClient(this, applicationContext)
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
-
+        webSocketClient = WebSocketClient(this, applicationContext)
         val timer = Timer()
+
+
+        joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
+        Switch = findViewById(R.id.switch1)
+        val select_button = findViewById<RadioGroup>(R.id.speed_select)
+        viewer = findViewById(R.id.mjpeg_view)
+
 
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     if (isconnect) {
-                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX(), joyStickSurfaceView.getPosY()).toByteString())
+                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX() * speed, joyStickSurfaceView.getPosY() * speed).toByteString())
                     }
                 }
             }, 100, 80
         )
 
-        viewer = findViewById<View>(R.id.mjpeg_view) as MjpegView
+
+
+        select_button.setOnCheckedChangeListener { _, checkedId: Int ->
+            when (checkedId) {
+                R.id.radio_button_low -> {
+                    speed = 100
+                }
+                R.id.radio_button_high -> {
+                    speed = 230
+                }
+                else -> throw IllegalArgumentException("not supported")
+            }
+        }
+
         viewer.mode = MjpegView.MODE_FIT_WIDTH
         viewer.isAdjustHeight = true
         viewer.supportPinchZoomAndPan = false
@@ -94,13 +114,13 @@ class MainActivity : ComponentActivity() {
         pwm += (position[1] - position[0] - 0).toInt()
         pwm += (position[1] - position[0] + 0).toInt()
         pwm += (position[1] + position[0] - 0).toInt()
-        pwm +=  (position[1] + 0).toInt()
-        pwm += (position[1] + 0).toInt()
+        pwm += if (Switch.isChecked) (position[1] + 0).toInt() else 0
+        pwm += if (Switch.isChecked) (position[1] - 0).toInt() else 0
 
         val bytes = ByteArray(12)
         val max_pwm = pwm.max()
         for (i in 0..5){
-            bytes[i*2] =  if (249 < max_pwm) ((250 * abs(pwm[i]) / max_pwm )and 0xff).toByte() else (abs(pwm[i]) and 0xff).toByte()
+            bytes[i*2] =  if (speed - 1 < max_pwm) ((speed * abs(pwm[i]) / max_pwm )and 0xff).toByte() else (abs(pwm[i]) and 0xff).toByte()
             bytes[i*2+1] =  if (pwm[i] < 0) 1  else 0
         }
 
