@@ -1,5 +1,6 @@
 package jp.ne.sakura.miyadai.roboconRemote
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -10,6 +11,7 @@ import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.ViewGroup
@@ -20,14 +22,35 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     private lateinit var params : ViewGroup.LayoutParams
     private lateinit var background: Bitmap
     private lateinit var stick: Bitmap
+
     private var alphaBacksPaint : Paint
+    private var alphaStickPaint : Paint
+
     private lateinit var surfaceHolder : SurfaceHolder
+    private val ALPHA_PAD_DEFAULT = 150
+    private var alphaLayout = 200
+
+    var layoutAlpha: Int
+        get() = alphaLayout
+        set(alpha) {
+            alphaLayout = alpha
+            alphaBacksPaint.alpha = alpha
+        }
 
     init {
         val res = context.resources
         alphaBacksPaint = Paint()
+        alphaStickPaint = Paint()
         loadImages(res)
         initHolder()
+        registerOnTouchEvent()
+    }
+
+    private fun loadImages(
+        res: Resources,
+    ) {
+        background = BitmapFactory.decodeResource(res, R.drawable.hojoystick)
+        stick = BitmapFactory.decodeResource(res, R.drawable.h_joystick_stick)
     }
 
     private fun initHolder() {
@@ -36,37 +59,49 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
         surfaceHolder.setFormat(PixelFormat.TRANSPARENT)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun registerOnTouchEvent() {
+        setOnTouchListener { _, event ->
+            drawJoyStickWith(event)
+            true
+        }
+    }
 
     override fun surfaceCreated(surfaceholder: SurfaceHolder) {
-        init()
-        val canvas = surfaceHolder.lockCanvas()
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-        canvas.drawBitmap(background, 0f, 0f, alphaBacksPaint)
-        surfaceHolder.unlockCanvasAndPost(canvas)
-    }
-
-    private fun init() {
+        layoutAlpha = ALPHA_PAD_DEFAULT
         params = ViewGroup.LayoutParams(width, height)
+
         background =  Bitmap.createScaledBitmap(background, params.width, params.height, false)
+        stick =  Bitmap.createScaledBitmap(stick, params.height, params.height, false)
+
+        val canvas = surfaceHolder.lockCanvas()
+        drawBackground(canvas)
+        drawStick(canvas)
+        surfaceHolder.unlockCanvasAndPost(canvas)
+        setZOrderOnTop(true);
     }
 
-    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+    private fun drawStick(canvas: Canvas) {
+        canvas.drawBitmap(stick, 0f, 0f, alphaStickPaint)
     }
 
-    override fun surfaceDestroyed(p0: SurfaceHolder) {
-    }
+    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
 
-    private fun loadImages(
-        res: Resources,
-    ) {
-        background = BitmapFactory.decodeResource(res, R.drawable.hojoystick)
-        //stick = BitmapFactory.decodeResource(res, resIdStick)
+    override fun surfaceDestroyed(p0: SurfaceHolder) {}
+
+    private fun drawJoyStickWith(event : MotionEvent) {
+        val canvas = surfaceHolder.lockCanvas()
+        drawBackground(canvas)
+        drawStick(canvas, event)
+        surfaceHolder.unlockCanvasAndPost(canvas)
     }
 
     private fun drawBackground(canvas: Canvas){
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        canvas.drawBitmap(background, 0f, 0f, alphaBacksPaint)
     }
 
-
-
+    private fun drawStick(canvas: Canvas, event: MotionEvent) {
+        drawStick(canvas)
+    }
 }

@@ -16,13 +16,14 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
+import kotlin.math.atan
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback {
-    private val RESID_STICK_DEFAULT: Int = R.drawable.s_joystick_stick
-    private val RESID_BACKGROUND_DEFAULT: Int = R.drawable.s_joystick_base
     private val DENO_RATE_STICK_TALL_TO_SIZE = 25
     private val DENO_RATE_STICK_SIZE_TO_PAD = 2
     private val DENO_RATE_OFFSET_TO_PAD = 3
@@ -51,6 +52,31 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var background: Bitmap? = null
     private var stick: Bitmap? = null
 
+
+    val getPosX : Float
+        get() = if (jsEntity.isTouched()) {
+            (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6)
+
+        } else 0f
+
+    val getPosY : Float
+        get() = if (jsEntity.isTouched()) {
+            (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6)
+        } else 0f
+
+    var layoutAlpha: Int
+        get() = alphaLayout
+        set(alpha) {
+            alphaLayout = alpha
+            alphaBacksPaint!!.alpha = alpha
+        }
+    var stickAlpha: Int
+        get() = alphaStick
+        set(alpha) {
+            alphaStick = alpha
+            alphaStickPaint!!.alpha = alpha
+        }
+
     init {
         if (!isInEditMode) setZOrderOnTop(true)
         initHolder()
@@ -66,6 +92,13 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         surfaceHolder!!.addCallback(this)
         surfaceHolder!!.setFormat(PixelFormat.TRANSPARENT)
     }
+
+    private fun loadImages(res: Resources) {
+        releaseJoyStickImages()
+        background = BitmapFactory.decodeResource(res, R.drawable.s_joystick_base)
+        stick = BitmapFactory.decodeResource(res, R.drawable.s_joystick_stick)
+    }
+
 
     private fun initAlphaPaints() {
         alphaSigPaint = Paint()
@@ -123,22 +156,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         jsEntity.centerY = (height / 2).toFloat()
     }
 
-    private fun loadImages(res: Resources) {
-        releaseJoyStickImages()
-        loadImages(
-            res,
-            RESID_BACKGROUND_DEFAULT,
-            RESID_STICK_DEFAULT
-        )
-    }
 
-    private fun loadImages(
-        res: Resources,
-        resIdBacks: Int, resIdStick: Int
-    ) {
-        background = BitmapFactory.decodeResource(res, resIdBacks)
-        stick = BitmapFactory.decodeResource(res, resIdStick)
-    }
 
 
     private fun releaseJoyStickImages() {
@@ -162,7 +180,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         positionX = (event.x - params!!.width / 2).toInt()
         positionY = (event.y - params!!.height / 2).toInt()
         distance =
-            Math.sqrt(Math.pow(positionX.toDouble(), 2.0) + Math.pow(positionY.toDouble(), 2.0))
+            sqrt(positionX.toDouble().pow(2.0) + positionY.toDouble().pow(2.0))
                 .toFloat()
         angle = calAngle(positionX.toFloat(), positionY.toFloat()).toFloat()
         val midDistanceX = (params!!.width / 2 - offset).toFloat()
@@ -221,32 +239,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private fun drawBackground(canvas: Canvas) {
         canvas.drawBitmap(background!!, 0f, 0f, alphaBacksPaint)
     }
-    fun getPosX(): Float {
-        return if (jsEntity.isTouched()) {
-            (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6)
-
-        } else 0f
-    }
-
-    fun getPosY(): Float {
-        return if (jsEntity.isTouched()) {
-            (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6)
-        } else 0f
-    }
-
-
-    var layoutAlpha: Int
-        get() = alphaLayout
-        set(alpha) {
-            alphaLayout = alpha
-            alphaBacksPaint!!.alpha = alpha
-        }
-    var stickAlpha: Int
-        get() = alphaStick
-        set(alpha) {
-            alphaStick = alpha
-            alphaStickPaint!!.alpha = alpha
-        }
 
     private fun resizeImages() {
         stick = resizeImage(stick, stickWidth, stickHeight)
@@ -268,10 +260,10 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     }
 
     private fun calAngle(x: Float, y: Float): Double {
-        if (x >= 0 && y >= 0) return Math.toDegrees(Math.atan((y / x).toDouble())) else if (x < 0 && y >= 0) return Math.toDegrees(
-            Math.atan((y / x).toDouble())
-        ) + 180 else if (x < 0 && y < 0) return Math.toDegrees(Math.atan((y / x).toDouble())) + 180 else if (x >= 0 && y < 0) return Math.toDegrees(
-            Math.atan((y / x).toDouble())
+        if (x >= 0 && y >= 0) return Math.toDegrees(atan((y / x).toDouble())) else if (x < 0 && y >= 0) return Math.toDegrees(
+            atan((y / x).toDouble())
+        ) + 180 else if (x < 0 && y < 0) return Math.toDegrees(atan((y / x).toDouble())) + 180 else if (x >= 0 && y < 0) return Math.toDegrees(
+            atan((y / x).toDouble())
         ) + 360
         return 0.0
     }

@@ -32,6 +32,18 @@
         app:layout_constraintGuide_percent="0.7" />
 
 
+    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
+        android:id="@+id/horizontalStickSurfaceview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="4.12:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
+
     <jp.ne.sakura.miyadai.roboconRemote.JoyStickSurfaceView
         android:id="@+id/JoySticksurfaceView"
         android:layout_width="0dp"
@@ -86,17 +98,5 @@
             android:layout_weight="1"
             android:text="高速" />
     </RadioGroup>
-
-    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
-        android:id="@+id/horizontalStickSurfaceview"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="5:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

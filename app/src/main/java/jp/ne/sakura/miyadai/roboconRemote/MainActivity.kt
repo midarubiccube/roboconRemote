@@ -42,13 +42,11 @@ class MainActivity : ComponentActivity() {
             object : TimerTask() {
                 override fun run() {
                     if (isconnect) {
-                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX() * speed, joyStickSurfaceView.getPosY() * speed).toByteString())
+                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX * speed, joyStickSurfaceView.getPosY * speed).toByteString())
                     }
                 }
             }, 100, 80
         )
-
-
 
         select_button.setOnCheckedChangeListener { _, checkedId: Int ->
             when (checkedId) {
