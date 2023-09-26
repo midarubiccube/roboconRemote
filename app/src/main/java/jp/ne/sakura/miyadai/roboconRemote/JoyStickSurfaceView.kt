@@ -29,10 +29,8 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private val DENO_RATE_OFFSET_TO_PAD = 3
     private val ALPHA_PAD_DEFAULT = 150
     private val ALPHA_STICK_DEFAULT = 180
-    private val ALPHA_SIGNAL_DEFAULT = 140
     private var alphaStick = 200
     private var alphaLayout = 200
-    var alphaSignal = 200
     var offset = 0
     private var surfaceHolder: SurfaceHolder? = null
     private var params: ViewGroup.LayoutParams? = null
@@ -45,7 +43,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var angle = 0f
     private val jsEntity // joy stick entity
             : JoyStickEntity
-    private var alphaSigPaint: Paint? = null
     private var alphaBacksPaint: Paint? = null
     private var alphaStickPaint: Paint? = null
     private val res: Resources
@@ -101,7 +98,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
 
     private fun initAlphaPaints() {
-        alphaSigPaint = Paint()
         alphaBacksPaint = Paint()
         alphaStickPaint = Paint()
     }
@@ -128,7 +124,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         )
         layoutAlpha = ALPHA_PAD_DEFAULT
         stickAlpha = ALPHA_STICK_DEFAULT
-        setSignalAlpha(ALPHA_SIGNAL_DEFAULT)
         offset = params!!.width / DENO_RATE_OFFSET_TO_PAD
         resizeImages()
     }
@@ -156,9 +151,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         jsEntity.centerY = (height / 2).toFloat()
     }
 
-
-
-
     private fun releaseJoyStickImages() {
         if (background != null) background!!.recycle()
         if (stick != null) stick!!.recycle()
@@ -182,7 +174,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         distance =
             sqrt(positionX.toDouble().pow(2.0) + positionY.toDouble().pow(2.0))
                 .toFloat()
-        angle = calAngle(positionX.toFloat(), positionY.toFloat()).toFloat()
         val midDistanceX = (params!!.width / 2 - offset).toFloat()
         val midDistanceY = (params!!.height / 2 - offset).toFloat()
         if (event.action == MotionEvent.ACTION_DOWN) {
@@ -252,11 +243,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     fun setStickSize(width: Int, height: Int) {
         stickWidth = width
         stickHeight = height
-    }
-
-    fun setSignalAlpha(alpha: Int) {
-        alphaSignal = alpha
-        alphaSigPaint!!.alpha = alpha
     }
 
     private fun calAngle(x: Float, y: Float): Double {

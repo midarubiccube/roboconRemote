@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.ViewGroup
+import java.lang.Math.abs
 
 class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback{
@@ -23,12 +24,17 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     private lateinit var background: Bitmap
     private lateinit var stick: Bitmap
 
+    private var X : Float = 0f
+
     private var alphaBacksPaint : Paint
     private var alphaStickPaint : Paint
+
+    private var isTouched = false
 
     private lateinit var surfaceHolder : SurfaceHolder
     private val ALPHA_PAD_DEFAULT = 150
     private var alphaLayout = 200
+
 
     var layoutAlpha: Int
         get() = alphaLayout
@@ -36,6 +42,9 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
             alphaLayout = alpha
             alphaBacksPaint.alpha = alpha
         }
+
+    val sendX : Float
+        get() = if (isTouched) (X - width  / 2) / (params.width - params.height) * 2 else 0f
 
     init {
         val res = context.resources
@@ -70,6 +79,7 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     override fun surfaceCreated(surfaceholder: SurfaceHolder) {
         layoutAlpha = ALPHA_PAD_DEFAULT
         params = ViewGroup.LayoutParams(width, height)
+        X = (params.width  / 2).toFloat()
 
         background =  Bitmap.createScaledBitmap(background, params.width, params.height, false)
         stick =  Bitmap.createScaledBitmap(stick, params.height, params.height, false)
@@ -82,7 +92,7 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas) {
-        canvas.drawBitmap(stick, 0f, 0f, alphaStickPaint)
+        canvas.drawBitmap(stick,  X - params.height /2 , 0f, alphaStickPaint)
     }
 
     override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
@@ -102,6 +112,20 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            isTouched = true
+            if (event.x < params.width - params.height / 2 && event.x - params.height / 2 > 0){
+                X  = event.x
+            }
+        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
+            if (event.x < params.width - params.height / 2 &&  event.x - params.height / 2 > 0){
+                X  = event.x
+            }
+        } else if (event.action == MotionEvent.ACTION_UP) {
+            isTouched = false
+            X  = (width  / 2).toFloat()
+        }
+
         drawStick(canvas)
     }
 }

@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
     lateinit var webSocketClient : WebSocketClient
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
+    lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var Switch : Switch
     private val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
@@ -36,13 +37,14 @@ class MainActivity : ComponentActivity() {
         Switch = findViewById(R.id.switch1)
         val select_button = findViewById<RadioGroup>(R.id.speed_select)
         viewer = findViewById(R.id.mjpeg_view)
+        horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
 
 
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     if (isconnect) {
-                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX * speed, joyStickSurfaceView.getPosY * speed).toByteString())
+                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX * speed, joyStickSurfaceView.getPosY * speed, horizontalStickSurfaceview.sendX * speed).toByteString())
                     }
                 }
             }, 100, 80
@@ -87,14 +89,14 @@ class MainActivity : ComponentActivity() {
         webSocketClient.connect()
     }
 
-    private fun MakeSendData(posX : Float, posY : Float) : ByteArray {
+    private fun MakeSendData(posX : Float, posY : Float, posR : Float) : ByteArray {
         val distance : Float =
             sqrt(posX.toDouble().pow(2.0) + posY.toDouble().pow(2.0))
                 .toFloat()
         val Xa = abs(posX)
         val Ya = abs(posY)
 
-        val position : Array<Float> = arrayOf(posX, posY)
+        val position : Array<Float> = arrayOf(posX, posY, posR)
 
         if (Xa < Ya) {
             position[0] = position[0] * distance / Ya
@@ -108,12 +110,12 @@ class MainActivity : ComponentActivity() {
         }
         var pwm : Array<Int> = emptyArray();
 
-        pwm += (position[1] + position[0] + 0).toInt()
-        pwm += (position[1] - position[0] - 0).toInt()
-        pwm += (position[1] - position[0] + 0).toInt()
-        pwm += (position[1] + position[0] - 0).toInt()
-        pwm += if (Switch.isChecked) (position[1] + 0).toInt() else 0
-        pwm += if (Switch.isChecked) (position[1] - 0).toInt() else 0
+        pwm += (position[1] + position[0] + position[2]).toInt()
+        pwm += (position[1] - position[0] - position[2]).toInt()
+        pwm += (position[1] - position[0] + position[2]).toInt()
+        pwm += (position[1] + position[0] - position[2]).toInt()
+        pwm += if (Switch.isChecked) (position[1] + position[2]).toInt() else 0
+        pwm += if (Switch.isChecked) (position[1] - position[2]).toInt() else 0
 
         val bytes = ByteArray(12)
         val max_pwm = pwm.max()
@@ -122,19 +124,6 @@ class MainActivity : ComponentActivity() {
             bytes[i*2+1] =  if (pwm[i] < 0) 1  else 0
         }
 
-        return bytes
-    }
-
-    fun annexation(x : Int, y : Int): ByteArray {
-        val bytes = ByteArray(8)
-        bytes[0] = (x and 0xFF).toByte()
-        bytes[1] = ((x ushr 8) and 0xFF).toByte()
-        bytes[2] = ((x ushr 16) and 0xFF).toByte()
-        bytes[3] = ((x ushr 24) and 0xFF).toByte()
-        bytes[4] = (y and 0xFF).toByte()
-        bytes[5] = ((y ushr 8) and 0xFF).toByte()
-        bytes[6] = ((y ushr 16) and 0xFF).toByte()
-        bytes[7] = ((y ushr 24) and 0xFF).toByte()
         return bytes
     }
 }
