@@ -1,8 +1,10 @@
 package jp.ne.sakura.miyadai.roboconRemote
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.Switch
 import androidx.activity.ComponentActivity
@@ -22,9 +24,13 @@ class MainActivity : ComponentActivity() {
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
-    lateinit var Switch : Switch
+    lateinit var up_buttom : Button
+    lateinit var down_buttom : Button
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private lateinit var Switch : Switch
     private val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -38,6 +44,8 @@ class MainActivity : ComponentActivity() {
         val select_button = findViewById<RadioGroup>(R.id.speed_select)
         viewer = findViewById(R.id.mjpeg_view)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
+        up_buttom = findViewById(R.id.up_button)
+        down_buttom = findViewById(R.id.down_button)
 
 
         timer.scheduleAtFixedRate(
@@ -62,6 +70,14 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        up_buttom.setOnClickListener {
+            webSocketClient.send("up")
+        }
+
+        down_buttom.setOnClickListener {
+            webSocketClient.send("down")
+        }
+
         viewer.mode = MjpegView.MODE_FIT_WIDTH
         viewer.isAdjustHeight = true
         viewer.supportPinchZoomAndPan = false
@@ -77,8 +93,9 @@ class MainActivity : ComponentActivity() {
         webSocketClient.close()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroy() {;]
+
+         super.onDestroy()
         Log.d("stop", "stop")
         webSocketClient.close()
     }

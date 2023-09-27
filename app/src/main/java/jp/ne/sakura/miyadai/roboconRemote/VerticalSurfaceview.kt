@@ -56,7 +56,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     private fun loadImages(
         res: Resources,
     ) {
-        background = BitmapFactory.decodeResource(res, R.drawable.vojoystick)
+        background = BitmapFactory.decodeResource(res, R.drawable.h_joystick_stick)
         stick = BitmapFactory.decodeResource(res, R.drawable.h_joystick_stick)
     }
 
