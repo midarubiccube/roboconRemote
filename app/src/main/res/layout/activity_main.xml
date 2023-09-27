@@ -32,45 +32,6 @@
         app:layout_constraintGuide_percent="0.7" />
 
 
-    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
-        android:id="@+id/horizontalStickSurfaceview"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="4.12:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
-
-    <jp.ne.sakura.miyadai.roboconRemote.JoyStickSurfaceView
-        android:id="@+id/JoySticksurfaceView"
-        android:layout_width="0dp"
-        android:layout_height="240dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Switch
-        android:id="@+id/switch1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        android:background="@drawable/swtich_track"
-        android:showText="false"
-        android:thumb="@drawable/switch_thumb"
-        android:track="@drawable/swtich_track"
-        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
-        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <RadioGroup
         android:id="@+id/speed_select"
         android:layout_width="wrap_content"
@@ -98,5 +59,44 @@
             android:layout_weight="1"
             android:text="高速" />
     </RadioGroup>
+
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/swtich_track"
+        android:showText="false"
+        android:thumb="@drawable/switch_thumb"
+        android:track="@drawable/swtich_track"
+        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
+        android:id="@+id/horizontalStickSurfaceview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="4.12:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
+
+    <jp.ne.sakura.miyadai.roboconRemote.JoyStickSurfaceView
+        android:id="@+id/JoySticksurfaceView"
+        android:layout_width="0dp"
+        android:layout_height="240dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

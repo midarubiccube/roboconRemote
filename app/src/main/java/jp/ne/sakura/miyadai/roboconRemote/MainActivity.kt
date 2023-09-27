@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                         webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX * speed, joyStickSurfaceView.getPosY * speed, horizontalStickSurfaceview.sendX * speed).toByteString())
                     }
                 }
-            }, 100, 80
+            }, 100, 10
         )
 
         select_button.setOnCheckedChangeListener { _, checkedId: Int ->
@@ -96,18 +96,23 @@ class MainActivity : ComponentActivity() {
         val Xa = abs(posX)
         val Ya = abs(posY)
 
+
         val position : Array<Float> = arrayOf(posX, posY, posR)
 
-        if (Xa < Ya) {
-            position[0] = position[0] * distance / Ya
-            position[1] = position[1] * distance / Ya
-        } else if (Xa > Ya) {
-            position[0] = position[0] * distance / Xa
-            position[1] = position[1] * distance / Xa
-        } else if (Xa == Ya) {
-            position[0] = position[0] * distance / Xa
-            position[1] = position[1] * distance / Ya
+        if (Xa != 0f && Ya != 0f) {
+            if (Xa < Ya) {
+                position[0] = position[0] * distance / Ya
+                position[1] = position[1] * distance / Ya
+            } else if (Xa > Ya) {
+                position[0] = position[0] * distance / Xa
+                position[1] = position[1] * distance / Xa
+            } else if (Xa == Ya) {
+                position[0] = position[0] * distance / Xa
+                position[1] = position[1] * distance / Ya
+            }
         }
+
+
         var pwm : Array<Int> = emptyArray();
 
         pwm += (position[1] + position[0] + position[2]).toInt()
