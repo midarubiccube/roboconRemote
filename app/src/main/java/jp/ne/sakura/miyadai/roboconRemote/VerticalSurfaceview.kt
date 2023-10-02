@@ -22,7 +22,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     private lateinit var background: Bitmap
     private lateinit var stick: Bitmap
 
-    private var X : Float = 0f
+    private var postionY : Float = 0f
 
     private var alphaBacksPaint : Paint
     private var alphaStickPaint : Paint
@@ -41,8 +41,8 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
             alphaBacksPaint.alpha = alpha
         }
 
-    val sendX : Float
-        get() = if (isTouched) (X - width  / 2) / (params.width - params.height) * 2 else 0f
+    val sendY : Float
+        get() = if (isTouched) (postionY - params.height  / 2) / (params.height - params.width) * 2 else 0f
 
     init {
         val res = context.resources
@@ -57,7 +57,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
         res: Resources,
     ) {
         background = BitmapFactory.decodeResource(res, R.drawable.vojoystick)
-        stick = BitmapFactory.decodeResource(res, R.drawable.h_joystick_stick)
+        stick = BitmapFactory.decodeResource(res, R.drawable.vjoystick_stick)
     }
 
     private fun initHolder() {
@@ -77,10 +77,10 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     override fun surfaceCreated(surfaceholder: SurfaceHolder) {
         layoutAlpha = ALPHA_PAD_DEFAULT
         params = ViewGroup.LayoutParams(width, height)
-        X = (params.width  / 2).toFloat()
+        postionY = (params.height  / 2).toFloat()
 
         background =  Bitmap.createScaledBitmap(background, params.width, params.height, false)
-        stick =  Bitmap.createScaledBitmap(stick, params.height, params.height, false)
+        stick =  Bitmap.createScaledBitmap(stick, params.width, params.width, false)
 
         val canvas = surfaceHolder.lockCanvas()
         drawBackground(canvas)
@@ -90,7 +90,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas) {
-        canvas.drawBitmap(stick,  X - params.height /2 , 0f, alphaStickPaint)
+        canvas.drawBitmap(stick,  0f, postionY - params.width /2 , alphaStickPaint)
     }
 
     override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
@@ -112,16 +112,16 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
         if (event.action == MotionEvent.ACTION_DOWN) {
             isTouched = true
-            if (event.x < params.width - params.height / 2 && event.x - params.height / 2 > 0){
-                X  = event.x
+            if (event.y < params.height - params.width / 2 && event.y - params.width / 2 > 0){
+                postionY  = event.y
             }
         } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
-            if (event.x < params.width - params.height / 2 &&  event.x - params.height / 2 > 0){
-                X  = event.x
+            if (event.y < params.height - params.width / 2 &&  event.y - params.width / 2 > 0){
+                postionY  = event.y
             }
         } else if (event.action == MotionEvent.ACTION_UP) {
             isTouched = false
-            X  = (width  / 2).toFloat()
+            postionY  = (params.height  / 2).toFloat()
         }
 
         drawStick(canvas)

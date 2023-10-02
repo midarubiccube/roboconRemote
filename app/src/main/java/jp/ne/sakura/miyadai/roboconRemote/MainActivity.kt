@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
+    lateinit var verticalSurfaceview: VerticalSurfaceview
     lateinit var Switch : Switch
     private val STREAM_URL = "http://192.168.0.20:8000/?action=stream"
 
@@ -38,13 +39,14 @@ class MainActivity : ComponentActivity() {
         val select_button = findViewById<RadioGroup>(R.id.speed_select)
         viewer = findViewById(R.id.mjpeg_view)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
+        verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
 
 
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     if (isconnect) {
-                        webSocketClient.send(MakeSendData(joyStickSurfaceView.getPosX * speed, joyStickSurfaceView.getPosY * speed, horizontalStickSurfaceview.sendX * speed).toByteString())
+                        webSocketClient.send(MakeSendData().toByteString())
                     }
                 }
             }, 100, 10
@@ -89,48 +91,23 @@ class MainActivity : ComponentActivity() {
         webSocketClient.connect()
     }
 
-    private fun MakeSendData(posX : Float, posY : Float, posR : Float) : ByteArray {
-        val distance : Float =
-            sqrt(posX.toDouble().pow(2.0) + posY.toDouble().pow(2.0))
-                .toFloat()
-        val Xa = abs(posX)
-        val Ya = abs(posY)
-
-
-        val position : Array<Float> = arrayOf(posX, posY, posR)
-
-        if (Xa != 0f && Ya != 0f) {
-            if (Xa < Ya) {
-                position[0] = position[0] * distance / Ya
-                position[1] = position[1] * distance / Ya
-            } else if (Xa > Ya) {
-                position[0] = position[0] * distance / Xa
-                position[1] = position[1] * distance / Xa
-            } else if (Xa == Ya) {
-                position[0] = position[0] * distance / Xa
-                position[1] = position[1] * distance / Ya
-            }
-        }
-
-
-        var pwm : Array<Int> = emptyArray();
-
-        pwm += (position[1] + position[0] + position[2]).toInt()
-        pwm += (position[1] - position[0] - position[2]).toInt()
-        pwm += (position[1] - position[0] + position[2]).toInt()
-        pwm += (position[1] + position[0] - position[2]).toInt()
-        pwm += if (Switch.isChecked) (position[1] + position[2]).toInt() else 0
-        pwm += if (Switch.isChecked) (position[1] - position[2]).toInt() else 0
-
-        val bytes = ByteArray(12)
-        val max_pwm = pwm.max()
-        for (i in 0..5){
-            bytes[i*2] =  if (speed - 1 < max_pwm) ((speed * abs(pwm[i]) / max_pwm )and 0xff).toByte() else (abs(pwm[i]) and 0xff).toByte()
-            bytes[i*2+1] =  if (pwm[i] < 0) 1  else 0
-        }
-
+    private fun MakeSendData() : ByteArray {
+        var bytes = ByteArray(0)
+        bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
+        bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()
+        bytes += (horizontalStickSurfaceview.sendX * speed).makeByteArray()
+        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
         return bytes
     }
+    private fun Float.makeByteArray() : ByteArray{
+        val bytes = ByteArray(4)
+        bytes[0] = (this.toRawBits() and 0xFF).toByte()
+        bytes[1] = ((this.toRawBits() ushr 8) and 0xFF).toByte()
+        bytes[2] = ((this.toRawBits() ushr 16) and 0xFF).toByte()
+        bytes[3] = ((this.toRawBits() ushr 24) and 0xFF).toByte()
+        return bytes
+    }
+
 }
 
 
