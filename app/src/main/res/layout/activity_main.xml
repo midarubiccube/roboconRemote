@@ -14,11 +14,11 @@
 
     <com.longdo.mjpegviewer.MjpegView
         android:id="@+id/mjpeg_view"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
@@ -44,34 +44,6 @@
         android:layout_height="wrap_content"
         app:barrierDirection="top"
         app:layout_constraintGuide_begin="231dp" />
-
-    <RadioGroup
-        android:id="@+id/speed_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        android:checkedButton="@id/radio_button_high"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/switch1"
-        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <RadioButton
-            android:id="@+id/radio_button_low"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="低速" />
-
-        <RadioButton
-            android:id="@+id/radio_button_high"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="高速" />
-    </RadioGroup>
 
     <Switch
         android:id="@+id/switch1"
@@ -121,6 +93,19 @@
         app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
         app:layout_constraintDimensionRatio="1:4.12"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tedt" />
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="64dp"
+        android:progressDrawable="@drawable/Progress"
+        app:layout_constraintBottom_toTopOf="@+id/switch1"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tedt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
