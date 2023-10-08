@@ -49,13 +49,13 @@ class MainActivity : ComponentActivity() {
 
         seekBar.min = 20
         seekBar.max = 150
+        seekBar.progress = 85
 
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     if (ESPisconnect) {
                         val speed = seekBar.progress
-
                         var bytes = ByteArray(0)
                         bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
                         bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()

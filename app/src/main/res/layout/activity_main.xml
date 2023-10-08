@@ -6,22 +6,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="postionY" />
-
     <com.longdo.mjpegviewer.MjpegView
         android:id="@+id/mjpeg_view"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="64dp"
+        android:text="速度"
+        app:layout_constraintBottom_toTopOf="@+id/switch1"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="64dp"
+        android:text="クローラ"
+        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_before_guideline"
@@ -49,16 +63,16 @@
         android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/swtich_track"
         android:showText="false"
         android:thumb="@drawable/switch_thumb"
         android:track="@drawable/swtich_track"
         app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.36"
+        app:layout_constraintStart_toEndOf="@+id/textView2" />
 
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"
@@ -99,12 +113,12 @@
         android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="64dp"
         app:layout_constraintBottom_toTopOf="@+id/switch1"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="@+id/tedt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
