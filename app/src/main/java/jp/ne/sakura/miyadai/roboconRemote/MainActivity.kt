@@ -17,21 +17,26 @@ import kotlin.math.sqrt
 
 
 class MainActivity : ComponentActivity() {
-    var isconnect : Boolean = false
-    lateinit var webSocketClient : WebSocketClient
+    var ESPisconnect : Boolean = false
+    var RPIisconnect : Boolean = false
+    private var speed : Int = 230
+    lateinit var ESPWebSocketClient : ESPWebSocketClient
+    lateinit var RPIWebSocketClient : RPIWebSocketClient
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
     lateinit var Switch : Switch
     lateinit var seekBar: SeekBar
-    private val STREAM_URL = "http://192.168.0.37:81/stream"
+    private val STREAM_URL = "http://192.168.0.20:81/stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        webSocketClient = WebSocketClient(this, applicationContext)
+        ESPWebSocketClient = ESPWebSocketClient(this)
+        RPIWebSocketClient = RPIWebSocketClient(this)
+
         val timer = Timer()
 
 
@@ -48,8 +53,21 @@ class MainActivity : ComponentActivity() {
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
-                    if (isconnect) {
-                        webSocketClient.send(MakeSendData().toByteString())
+                    if (ESPisconnect) {
+                        val speed = seekBar.progress
+
+                        var bytes = ByteArray(0)
+                        bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
+                        bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()
+                        bytes += (horizontalStickSurfaceview.sendX * speed).makeByteArray()
+                        bytes += (speed and 0xff).toByte()
+                        bytes += if (Switch.isChecked) (1).toByte() else (0).toByte()
+                        ESPWebSocketClient.send(bytes.toByteString())
+                    }
+                    if (RPIisconnect) {
+                        var bytes = ByteArray(0)
+                        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
+                        RPIWebSocketClient.send(bytes.toByteString())
                     }
                 }
             }, 100, 10
@@ -59,41 +77,32 @@ class MainActivity : ComponentActivity() {
         viewer.isAdjustHeight = true
         viewer.supportPinchZoomAndPan = false
         viewer.setUrl(STREAM_URL)
-        viewer.startStream()
 
-        webSocketClient.send("Hello from Android")
-
+        ESPWebSocketClient.connect()
+        RPIWebSocketClient.connect()
     }
 
     override fun onPause() {
         super.onPause()
         Log.d("stop", "stop")
-        webSocketClient.close()
+        ESPWebSocketClient.close()
+        RPIWebSocketClient.close()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("stop", "stop")
-        webSocketClient.close()
+        ESPWebSocketClient.close()
+        RPIWebSocketClient.close()
     }
 
     override fun onRestart() {
         super.onRestart()
         Log.d("restart", "restart")
-        webSocketClient.connect()
+        ESPWebSocketClient.connect()
+        RPIWebSocketClient.connect()
     }
 
-    private fun MakeSendData() : ByteArray {
-        var bytes = ByteArray(0)
-        val speed = seekBar.progress
-        bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
-        bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()
-        bytes += (horizontalStickSurfaceview.sendX * speed).makeByteArray()
-        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
-        bytes += (speed and 0xff).toByte()
-        bytes += if(Switch.isChecked) (1).toByte() else (0).toByte()
-        return bytes
-    }
     private fun Float.makeByteArray() : ByteArray{
         val bytes = ByteArray(4)
         bytes[0] = (this.toRawBits() and 0xFF).toByte()
