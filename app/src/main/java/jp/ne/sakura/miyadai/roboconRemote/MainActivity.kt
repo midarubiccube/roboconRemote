@@ -2,8 +2,6 @@ package jp.ne.sakura.miyadai.roboconRemote
 
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.Switch
 import androidx.activity.ComponentActivity
@@ -11,9 +9,6 @@ import com.longdo.mjpegviewer.MjpegView
 import okio.ByteString.Companion.toByteString
 import java.util.Timer
 import java.util.TimerTask
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 
 class MainActivity : ComponentActivity() {
@@ -26,8 +21,10 @@ class MainActivity : ComponentActivity() {
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
-    lateinit var Switch : Switch
-    lateinit var seekBar: SeekBar
+    lateinit var clawlerSwitch : Switch
+    lateinit var SwitchSeppuku : Switch
+    lateinit var updown_switch : Switch
+    lateinit var speedseekBar: SeekBar
     private val STREAM_URL = "http://192.168.0.20:81/stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,37 +38,57 @@ class MainActivity : ComponentActivity() {
 
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
-        Switch = findViewById(R.id.switch1)
-        seekBar = findViewById(R.id.seekBar)
-        viewer = findViewById(R.id.mjpeg_view)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
 
-        seekBar.min = 20
-        seekBar.max = 150
-        seekBar.progress = 85
+        clawlerSwitch = findViewById(R.id.switch_clawler)
+        SwitchSeppuku = findViewById(R.id.switch_seppuku)
+        updown_switch = findViewById(R.id.switch_updown)
+        speedseekBar = findViewById(R.id.speed_changer)
+        viewer = findViewById(R.id.mjpeg_view)
+
+
+        speedseekBar.min = 20
+        speedseekBar.max = 150
+        speedseekBar.progress = 85
 
         timer.scheduleAtFixedRate(
             object : TimerTask() {
                 override fun run() {
                     if (ESPisconnect) {
-                        val speed = seekBar.progress
+                        val speed = speedseekBar.progress
                         var bytes = ByteArray(0)
                         bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
                         bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()
                         bytes += (horizontalStickSurfaceview.sendX * speed).makeByteArray()
                         bytes += (speed and 0xff).toByte()
-                        bytes += if (Switch.isChecked) (1).toByte() else (0).toByte()
+                        bytes += if (clawlerSwitch.isChecked) (1).toByte() else (0).toByte()
                         ESPWebSocketClient.send(bytes.toByteString())
                     }
                     if (RPIisconnect) {
                         var bytes = ByteArray(0)
-                        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
+                        bytes += if (updown_switch.isChecked) (0.0f).makeByteArray() else (verticalSurfaceview.sendY * 128).makeByteArray()
+                        bytes += if (SwitchSeppuku.isChecked) (0).toByte() else (1).toByte()
                         RPIWebSocketClient.send(bytes.toByteString())
+
                     }
                 }
-            }, 100, 10
+            }, 100, 25
         )
+
+        SwitchSeppuku.setOnCheckedChangeListener { _, isChecked ->
+          if(isChecked){
+              RPIWebSocketClient.send("crawleron")
+          }
+        };
+
+        updown_switch.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                RPIWebSocketClient.send("updownon")
+            } else {
+                RPIWebSocketClient.send("updownoff")
+            }
+        };
 
         viewer.mode = MjpegView.MODE_FIT_WIDTH
         viewer.isAdjustHeight = true
