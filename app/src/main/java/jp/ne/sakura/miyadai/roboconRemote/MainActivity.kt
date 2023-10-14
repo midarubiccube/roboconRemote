@@ -19,10 +19,13 @@ class MainActivity : ComponentActivity() {
     lateinit var viewer : MjpegView
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
+    lateinit var horizontalStickSurfaceview1 : StickSurfaceview
+    lateinit var horizontalStickSurfaceview2 : StickSurfaceview
+    lateinit var horizontalStickSurfaceview3: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
     lateinit var clawlerSwitch : Switch
+    lateinit var clawlerSwitch2 : Switch
     lateinit var SwitchSeppuku : Switch
-    lateinit var switch_lock : Switch
     lateinit var speedseekBar: SeekBar
     private val STREAM_URL = "http://192.168.0.20:81/stream"
 
@@ -39,11 +42,14 @@ class MainActivity : ComponentActivity() {
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
+        horizontalStickSurfaceview1 = findViewById(R.id.horizontalStickSurfaceview2)
+        horizontalStickSurfaceview2 = findViewById(R.id.horizontalStickSurfaceview3)
+        horizontalStickSurfaceview3 = findViewById(R.id.horizontalStickSurfaceview4)
+
 
         clawlerSwitch = findViewById(R.id.switch_clawler)
         SwitchSeppuku = findViewById(R.id.switch_seppuku)
-        //updown_switch = findViewById(R.id.switch_updown)
-        switch_lock = findViewById(R.id.switch_lock)
+        clawlerSwitch2 = findViewById(R.id.switch_clawler2)
 
         speedseekBar = findViewById(R.id.speed_changer)
         viewer = findViewById(R.id.mjpeg_view)
@@ -69,9 +75,11 @@ class MainActivity : ComponentActivity() {
                     if (RPIisconnect) {
                         var bytes = ByteArray(0)
                         bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
+                        bytes += (horizontalStickSurfaceview1.sendX * 100).makeByteArray()
+                        bytes += (horizontalStickSurfaceview2.sendX * 100).makeByteArray()
+                        bytes += (horizontalStickSurfaceview3.sendX * 50).makeByteArray()
                         bytes += if (SwitchSeppuku.isChecked) (0).toByte() else (1).toByte()
-                        bytes += if (clawlerSwitch.isChecked) (1).toByte() else (0).toByte()
-                        bytes += if (switch_lock.isChecked) (1).toByte() else (0).toByte()
+                        bytes += if (clawlerSwitch2.isChecked) (1).toByte() else (0).toByte()
                         RPIWebSocketClient.send(bytes.toByteString())
                     }
                 }

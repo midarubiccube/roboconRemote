@@ -15,7 +15,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/text_speed"
@@ -89,30 +89,31 @@
         app:layout_constraintEnd_toStartOf="@+id/verticalSurfaceview"
         app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
 
-    <TextView
-        android:id="@+id/text_seppuku2"
-        android:layout_width="wrap_content"
-        android:layout_height="21dp"
-        android:layout_marginEnd="8dp"
-        android:text="ロック機構"
-        app:layout_constraintBottom_toBottomOf="@+id/switch_lock"
-        app:layout_constraintEnd_toStartOf="@+id/switch_lock"
-        app:layout_constraintTop_toTopOf="@+id/switch_lock" />
 
-    <Switch
-        android:id="@+id/switch_lock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="64dp"
-        android:layout_marginBottom="64dp"
-        android:background="@drawable/swtich_track"
-        android:showText="false"
-        android:thumb="@drawable/switch_thumb"
-        android:track="@drawable/swtich_track"
-        app:layout_constraintBottom_toTopOf="@+id/switch_seppuku"
+    <jp.ne.sakura.miyadai.roboconRemote.StickSurfaceview
+        android:id="@+id/horizontalStickSurfaceview2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview3"
+        app:layout_constraintDimensionRatio="4.12:1"
         app:layout_constraintEnd_toStartOf="@+id/verticalSurfaceview"
-        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
 
+    <jp.ne.sakura.miyadai.roboconRemote.StickSurfaceview
+        android:id="@+id/horizontalStickSurfaceview3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
+        app:layout_constraintDimensionRatio="4.12:1"
+        app:layout_constraintEnd_toStartOf="@+id/verticalSurfaceview"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
 
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"
@@ -125,6 +126,17 @@
         app:layout_constraintDimensionRatio="4.12:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
+
+    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
+        android:id="@+id/horizontalStickSurfaceview4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/switch_seppuku"
+        app:layout_constraintDimensionRatio="4.12:1"
+        app:layout_constraintEnd_toStartOf="@+id/verticalSurfaceview"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
 
     <jp.ne.sakura.miyadai.roboconRemote.JoyStickSurfaceView
         android:id="@+id/JoySticksurfaceView"
@@ -169,5 +181,19 @@
         android:layout_height="wrap_content"
         app:barrierDirection="top"
         app:layout_constraintGuide_begin="231dp" />
+
+    <Switch
+        android:id="@+id/switch_clawler2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/swtich_track"
+        android:showText="false"
+        android:thumb="@drawable/switch_thumb"
+        android:track="@drawable/swtich_track"
+        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
