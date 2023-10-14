@@ -14,7 +14,6 @@ import java.util.TimerTask
 class MainActivity : ComponentActivity() {
     var ESPisconnect : Boolean = false
     var RPIisconnect : Boolean = false
-    private var speed : Int = 230
     lateinit var ESPWebSocketClient : ESPWebSocketClient
     lateinit var RPIWebSocketClient : RPIWebSocketClient
     lateinit var viewer : MjpegView
@@ -23,7 +22,7 @@ class MainActivity : ComponentActivity() {
     lateinit var verticalSurfaceview: VerticalSurfaceview
     lateinit var clawlerSwitch : Switch
     lateinit var SwitchSeppuku : Switch
-    lateinit var updown_switch : Switch
+    lateinit var switch_lock : Switch
     lateinit var speedseekBar: SeekBar
     private val STREAM_URL = "http://192.168.0.20:81/stream"
 
@@ -43,13 +42,15 @@ class MainActivity : ComponentActivity() {
 
         clawlerSwitch = findViewById(R.id.switch_clawler)
         SwitchSeppuku = findViewById(R.id.switch_seppuku)
-        updown_switch = findViewById(R.id.switch_updown)
+        //updown_switch = findViewById(R.id.switch_updown)
+        switch_lock = findViewById(R.id.switch_lock)
+
         speedseekBar = findViewById(R.id.speed_changer)
         viewer = findViewById(R.id.mjpeg_view)
 
 
         speedseekBar.min = 20
-        speedseekBar.max = 150
+        speedseekBar.max = 120
         speedseekBar.progress = 85
 
         timer.scheduleAtFixedRate(
@@ -59,18 +60,19 @@ class MainActivity : ComponentActivity() {
                         val speed = speedseekBar.progress
                         var bytes = ByteArray(0)
                         bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
-                        bytes += (joyStickSurfaceView.getPosY * speed).makeByteArray()
-                        bytes += (horizontalStickSurfaceview.sendX * speed).makeByteArray()
+                        bytes += (joyStickSurfaceView.getPosY * speed * -1).makeByteArray()
+                        bytes += (horizontalStickSurfaceview.sendX * speed * -1).makeByteArray()
                         bytes += (speed and 0xff).toByte()
                         bytes += if (clawlerSwitch.isChecked) (1).toByte() else (0).toByte()
                         ESPWebSocketClient.send(bytes.toByteString())
                     }
                     if (RPIisconnect) {
                         var bytes = ByteArray(0)
-                        bytes += if (updown_switch.isChecked) (0.0f).makeByteArray() else (verticalSurfaceview.sendY * 128).makeByteArray()
+                        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
                         bytes += if (SwitchSeppuku.isChecked) (0).toByte() else (1).toByte()
+                        bytes += if (clawlerSwitch.isChecked) (1).toByte() else (0).toByte()
+                        bytes += if (switch_lock.isChecked) (1).toByte() else (0).toByte()
                         RPIWebSocketClient.send(bytes.toByteString())
-
                     }
                 }
             }, 100, 25
@@ -80,13 +82,13 @@ class MainActivity : ComponentActivity() {
           if(isChecked){
               RPIWebSocketClient.send("crawleron")
           }
-        };
+        }
 
-        updown_switch.setOnCheckedChangeListener { _, isChecked ->
+        SwitchSeppuku.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked){
-                RPIWebSocketClient.send("updownon")
+                RPIWebSocketClient.send("teston")
             } else {
-                RPIWebSocketClient.send("updownoff")
+                RPIWebSocketClient.send("testoff")
             }
         };
 
