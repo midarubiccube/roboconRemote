@@ -17,7 +17,7 @@ class ESPWebSocketClient(activity: MainActivity) : WebSocketListener() {
             val client = OkHttpClient.Builder().pingInterval(5, TimeUnit.SECONDS).build()
 
             val request = Request.Builder()
-                .url("ws://192.168.0.21:8765")
+                .url("ws://192.168.0.92:8765")
                 .build()
 
             ws = client.newWebSocket(request, this)
@@ -41,7 +41,7 @@ class ESPWebSocketClient(activity: MainActivity) : WebSocketListener() {
             val client = OkHttpClient.Builder().pingInterval(5, TimeUnit.SECONDS).build()
 
             val request = Request.Builder()
-                .url("ws://192.168.0.21:8765")
+                .url("ws://192.168.0.92:8765")
                 .build()
 
             ws = client.newWebSocket(request, this)

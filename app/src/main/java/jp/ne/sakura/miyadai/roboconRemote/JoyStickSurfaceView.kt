@@ -31,7 +31,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private val ALPHA_STICK_DEFAULT = 180
     private var alphaStick = 200
     private var alphaLayout = 200
-    var offset = 0
+    private var offset = 0
     private var surfaceHolder: SurfaceHolder? = null
     private var params: ViewGroup.LayoutParams? = null
     private var stickTall = 0
@@ -40,7 +40,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var positionX = 0
     private var positionY = 0
     private var distance = 0f
-    private var angle = 0f
     private val jsEntity // joy stick entity
             : JoyStickEntity
     private var alphaBacksPaint: Paint? = null
@@ -211,7 +210,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
             jsEntity.position(0f,0f)
             jsEntity.setTouched(false)
         }
-
         drawStick(canvas)
     }
 
