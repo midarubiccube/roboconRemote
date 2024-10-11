@@ -23,6 +23,11 @@ android {
                 cppFlags += ""
             }
         }
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your app.
+            abiFilters += "arm64-v8a"
+        }
     }
 
     buildTypes {
@@ -80,5 +85,5 @@ dependencies {
     implementation ("org.java-websocket:Java-WebSocket:1.5.1")
     implementation ("com.squareup.okhttp3:okhttp:4.9.1")
     implementation ("com.perthcpe23.dev:android-mjpeg-view:1.1.2")
-
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 }
