@@ -11,7 +11,6 @@ class TalkerNode(name: String, private val topic: String) : BaseComposableNode(n
     var publisher: Publisher<geometry_msgs.msg.Twist> = node.createPublisher(
         geometry_msgs.msg.Twist::class.java, this.topic
     )
-
     fun publish(msg : geometry_msgs.msg.Twist) {
         publisher.publish(msg)
     }

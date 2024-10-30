@@ -51,15 +51,27 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
 
     val getPosX : Float
-        get() = if (jsEntity.isTouched()) {
+        get() = if (jsEntity.isTouched()|| jsEntity.islock()) {
             (jsEntity.x - (jsEntity.centerX - stickWidth / 2)) / (params!!.width / 6)
 
         } else 0f
 
     val getPosY : Float
-        get() = if (jsEntity.isTouched()) {
+        get() = if (jsEntity.isTouched() || jsEntity.islock()) {
             (jsEntity.y - (jsEntity.centerY - stickHeight / 2)) / (params!!.height / 6)
         } else 0f
+
+    fun setPOS(x : Float, y : Float){
+        if (!jsEntity.isTouched()){
+            jsEntity.x = (x * (params!!.width / 6) + (jsEntity.centerX - stickWidth / 2))
+            jsEntity.y = (y * (params!!.height / 6) +(jsEntity.centerY - stickHeight / 2))
+            val canvas = surfaceHolder!!.lockCanvas()
+            jsEntity.setlock(true)
+            drawBaseCanvas(canvas)
+            canvas.drawBitmap(stick!!, jsEntity.x, jsEntity.y, alphaStickPaint)
+            surfaceHolder!!.unlockCanvasAndPost(canvas)
+        }
+    }
 
     var layoutAlpha: Int
         get() = alphaLayout
@@ -179,6 +191,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         if (event.action == MotionEvent.ACTION_DOWN) {
             if (distance <= midDistanceX) {
                 jsEntity.position(event.x, event.y)
+                jsEntity.setlock(false)
                 jsEntity.setTouched(true)
             }
         } else if (event.action == MotionEvent.ACTION_MOVE && jsEntity.isTouched()) {
@@ -256,6 +269,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
     private inner class JoyStickEntity {
         private var isTouched = false
+        private var islock = false
         var x = 0f
         var y = 0f
         var centerX = 0f
@@ -272,6 +286,14 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
 
         fun setTouched(touched: Boolean) {
             isTouched = touched
+        }
+
+        fun islock(): Boolean {
+            return islock
+        }
+
+        fun setlock(lock: Boolean) {
+            islock = lock
         }
     }
 }

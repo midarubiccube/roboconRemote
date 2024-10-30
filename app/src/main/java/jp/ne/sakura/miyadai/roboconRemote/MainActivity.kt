@@ -10,12 +10,12 @@ import com.example.ros2_android_test_app.ROSActivity
 import com.example.ros2_android_test_app.TalkerNode
 import com.longdo.mjpegviewer.MjpegView
 import geometry_msgs.msg.Vector3
+import sensor_msgs.msg.Joy
 import org.ros2.rcljava.RCLJava
 import java.util.Timer
 import java.util.TimerTask
 
 class MainActivity : ROSActivity() {
-    var ESPisconnect : Boolean = false
     lateinit var viewer : MjpegView
     lateinit var Talker : TalkerNode
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
@@ -25,6 +25,9 @@ class MainActivity : ROSActivity() {
     lateinit var speedseekBar: SeekBar
     var AXIS_X : Float = 0.0f
     var AXIS_Y : Float = 0.0f
+    var AXIS_Z : Float = 0.0f
+    var AXIS_RTRIGGER : Float = 0.0f
+
     private val STREAM_URL = "http://192.168.0.20:81/stream"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +37,6 @@ class MainActivity : ROSActivity() {
         RCLJava.rclJavaInit(ROS_DOMAIN_ID)
 
         Talker = TalkerNode("android_controller", "/turtle1/cmd_vel")
-
-        val timer = Timer()
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
@@ -55,28 +56,29 @@ class MainActivity : ROSActivity() {
 
         val list = getGameControllerIds();
 
+        timer = Timer()
         timer.schedule(
             object : TimerTask() {
                 override fun run() {
                     val speed = speedseekBar.progress
                     val msg = geometry_msgs.msg.Twist()
-                    val vector = Vector3()
-                    vector.x = AXIS_X.toDouble()
-                    vector.y = AXIS_Y.toDouble();
-                    msg.linear = vector
-                    //Talker.publish(msg);
+                    val linear = Vector3()
+                    val angular = Vector3()
+                    linear.x = joyStickSurfaceView.getPosX.toDouble() * -1
+                    linear.y = joyStickSurfaceView.getPosY.toDouble() * -1
+                    angular.x = horizontalStickSurfaceview.getX.toDouble() * -1
+                    msg.linear = linear
+                    msg.angular = angular
+                    Talker.publish(msg);
                 }
-            }, 100, 20
+            }, 100, 10
         )
 
         viewer.mode = MjpegView.MODE_FIT_WIDTH
         viewer.isAdjustHeight = true
         viewer.supportPinchZoomAndPan = false
         viewer.setUrl(STREAM_URL)
-
-        //ESPWebSocketClient.connect()
     }
-
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
 
@@ -126,21 +128,18 @@ class MainActivity : ROSActivity() {
         return 0f
     }
     private fun processJoystickInput(event: MotionEvent, historyPos: Int) {
-
+ 
         val inputDevice = event.device
-        AXIS_X  = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
-        AXIS_Y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+        AXIS_X = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+        AXIS_Y = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Y, historyPos)
+        AXIS_Z = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Z, historyPos)
+        AXIS_RTRIGGER = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
 
-        val msg = geometry_msgs.msg.Twist()
-        val vector = Vector3()
-        vector.x = AXIS_X.toDouble()
-        vector.y = AXIS_Y.toDouble() * -1;
-        msg.linear = vector
-        Talker.publish(msg);
-
-        // Update the ship object based on the new x and y values
+        Log.d("test", AXIS_RTRIGGER.toString())
+        joyStickSurfaceView.setPOS(AXIS_X, AXIS_Y)
+        horizontalStickSurfaceview.setx(AXIS_Z)
+        verticalSurfaceview.sety(AXIS_RTRIGGER)
     }
-
 
     override fun onPause() {
         super.onPause()

@@ -28,6 +28,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     private var alphaStickPaint : Paint
 
     private var isTouched = false
+    private var islocked = false
 
     private lateinit var surfaceHolder : SurfaceHolder
     private val ALPHA_PAD_DEFAULT = 150
@@ -43,6 +44,16 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
 
     val sendY : Float
         get() = if (isTouched) (postionY - params.height  / 2) / (params.height - params.width) * 2 else 0f
+
+    fun sety(x : Float)
+    {
+        islocked = true
+        postionY = (x * (params.height - params.width)/2) + height/2
+        val canvas = surfaceHolder.lockCanvas()
+        drawBackground(canvas)
+        drawStick(canvas)
+        surfaceHolder.unlockCanvasAndPost(canvas)
+    }
 
     init {
         val res = context.resources
