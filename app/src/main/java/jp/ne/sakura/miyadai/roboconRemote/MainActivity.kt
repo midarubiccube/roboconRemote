@@ -7,17 +7,20 @@ import android.view.MotionEvent
 import android.widget.SeekBar
 import android.widget.Switch
 import com.example.ros2_android_test_app.ROSActivity
-import com.example.ros2_android_test_app.TalkerNode
 import com.longdo.mjpegviewer.MjpegView
+import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
 import sensor_msgs.msg.Joy
 import org.ros2.rcljava.RCLJava
+import org.ros2.rcljava.node.BaseComposableNode
+import org.ros2.rcljava.publisher.Publisher
 import java.util.Timer
 import java.util.TimerTask
 
 class MainActivity : ROSActivity() {
     lateinit var viewer : MjpegView
-    lateinit var Talker : TalkerNode
+    lateinit var Node : BaseComposableNode
+    lateinit var publisher: Publisher<Twist>
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
@@ -34,9 +37,12 @@ class MainActivity : ROSActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        RCLJava.rclJavaInit(ROS_DOMAIN_ID)
 
-        Talker = TalkerNode("android_controller", "/turtle1/cmd_vel")
+        Node = BaseComposableNode("android_controller")//ノード名を設定
+
+        publisher = Node.node.createPublisher(
+            geometry_msgs.msg.Twist::class.java, "/turtle1/cmd_vel" //Publisherを作成
+        )
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
@@ -52,7 +58,7 @@ class MainActivity : ROSActivity() {
         speedseekBar.max = 120
         speedseekBar.progress = 85
 
-        executor.addNode(Talker)
+        executor.addNode(Node)
 
         val list = getGameControllerIds();
 
@@ -69,7 +75,7 @@ class MainActivity : ROSActivity() {
                     angular.x = horizontalStickSurfaceview.getX.toDouble() * -1
                     msg.linear = linear
                     msg.angular = angular
-                    Talker.publish(msg);
+                    publisher.publish(msg);
                 }
             }, 100, 10
         )

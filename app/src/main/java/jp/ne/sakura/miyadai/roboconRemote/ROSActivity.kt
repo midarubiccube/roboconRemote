@@ -15,6 +15,7 @@ package com.example.ros2_android_test_app /* Copyright 2017 Esteve Fernandez <es
 
 import android.os.Bundle
 import android.os.Handler
+import android.system.Os
 import androidx.activity.ComponentActivity
 import org.ros2.rcljava.RCLJava
 import org.ros2.rcljava.executors.Executor
@@ -34,7 +35,8 @@ open class ROSActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.handler = Handler(mainLooper)
-        RCLJava.rclJavaInit(ROS_DOMAIN_ID)
+        Os.setenv("ROS_DOMAIN_ID", "123", true)
+        RCLJava.rclJavaInit()
         this.executor = this.createExecutor()
     }
 
