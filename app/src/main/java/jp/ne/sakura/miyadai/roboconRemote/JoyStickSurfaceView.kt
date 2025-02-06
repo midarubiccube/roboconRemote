@@ -40,7 +40,6 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var positionX = 0
     private var positionY = 0
     private var distance = 0f
-    private var angle = 0f
     private val jsEntity // joy stick entity
             : JoyStickEntity
     private var alphaBacksPaint: Paint? = null

@@ -31,8 +31,6 @@ class MainActivity : ROSActivity() {
     var AXIS_Z : Float = 0.0f
     var AXIS_RTRIGGER : Float = 0.0f
 
-    private val STREAM_URL = "http://192.168.0.20:81/stream"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -60,8 +58,6 @@ class MainActivity : ROSActivity() {
 
         executor.addNode(Node)
 
-        val list = getGameControllerIds();
-
         timer = Timer()
         timer.schedule(
             object : TimerTask() {
@@ -79,11 +75,6 @@ class MainActivity : ROSActivity() {
                 }
             }, 100, 10
         )
-
-        viewer.mode = MjpegView.MODE_FIT_WIDTH
-        viewer.isAdjustHeight = true
-        viewer.supportPinchZoomAndPan = false
-        viewer.setUrl(STREAM_URL)
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {

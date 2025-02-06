@@ -30,7 +30,6 @@ open class ROSActivity : ComponentActivity() {
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
-    protected val ROS_DOMAIN_ID = 123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
