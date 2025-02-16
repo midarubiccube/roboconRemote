@@ -2,144 +2,200 @@ package jp.ne.sakura.miyadai.roboconRemote
 
 import android.os.Bundle
 import android.util.Log
+import android.view.InputDevice
+import android.view.MotionEvent
 import android.widget.SeekBar
 import android.widget.Switch
-import androidx.activity.ComponentActivity
+import com.example.ros2_android_test_app.ROSActivity
 import com.longdo.mjpegviewer.MjpegView
-import okio.ByteString.Companion.toByteString
+import geometry_msgs.msg.Twist
+import geometry_msgs.msg.Vector3
+import org.ros2.rcljava.node.BaseComposableNode
+import org.ros2.rcljava.publisher.Publisher
+import std_msgs.msg.UInt16
 import java.util.Timer
 import java.util.TimerTask
 
-
-class MainActivity : ComponentActivity() {
-    var ESPisconnect : Boolean = false
-    var RPIisconnect : Boolean = false
-    lateinit var ESPWebSocketClient : ESPWebSocketClient
-    lateinit var RPIWebSocketClient : RPIWebSocketClient
+class MainActivity : ROSActivity() {
     lateinit var viewer : MjpegView
+    lateinit var Node : BaseComposableNode
+
+    lateinit var JoyStickpublisher: Publisher<Twist>
+    lateinit var Powerpublisher: Publisher<UInt16>
+    lateinit var Speedpublisher: Publisher<UInt16>
+
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
-    lateinit var horizontalStickSurfaceview1 : StickSurfaceview
-    lateinit var horizontalStickSurfaceview2 : StickSurfaceview
-    lateinit var horizontalStickSurfaceview3: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
-    lateinit var clawlerSwitch : Switch
-    lateinit var clawlerSwitch2 : Switch
-    lateinit var SwitchSeppuku : Switch
+    lateinit var Switch : Switch
     lateinit var speedseekBar: SeekBar
-    private val STREAM_URL = "http://192.168.0.20:81/stream"
+    var AXIS_X : Float = 0.0f
+    var AXIS_Y : Float = 0.0f
+    var AXIS_Z : Float = 0.0f
+    var AXIS_RTRIGGER : Float = 0.0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ESPWebSocketClient = ESPWebSocketClient(this)
-        RPIWebSocketClient = RPIWebSocketClient(this)
 
-        val timer = Timer()
+        Node = BaseComposableNode("android_controller")//ノード名を設定
 
+        JoyStickpublisher = Node.node.createPublisher(
+            Twist::class.java, "/turtle1/cmd_vel" //Publisherを作成
+        )
+
+        Powerpublisher = Node.node.createPublisher(
+            UInt16::class.java, "/turtle1/poweron" //Publisherを作成
+        )
+
+        Speedpublisher = Node.node.createPublisher(
+            UInt16::class.java, "/turtle1/speed" //Publisherを作成
+        )
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
-        horizontalStickSurfaceview1 = findViewById(R.id.horizontalStickSurfaceview2)
-        horizontalStickSurfaceview2 = findViewById(R.id.horizontalStickSurfaceview3)
-        horizontalStickSurfaceview3 = findViewById(R.id.horizontalStickSurfaceview4)
 
-
-        clawlerSwitch = findViewById(R.id.switch_clawler)
-        SwitchSeppuku = findViewById(R.id.switch_seppuku)
-        clawlerSwitch2 = findViewById(R.id.switch_clawler2)
+        Switch = findViewById(R.id.switch_seppuku)
 
         speedseekBar = findViewById(R.id.speed_changer)
-        viewer = findViewById(R.id.mjpeg_view)
-
 
         speedseekBar.min = 20
         speedseekBar.max = 120
         speedseekBar.progress = 85
 
-        timer.scheduleAtFixedRate(
-            object : TimerTask() {
-                override fun run() {
-                    if (ESPisconnect) {
-                        val speed = speedseekBar.progress
-                        var bytes = ByteArray(0)
-                        bytes += (joyStickSurfaceView.getPosX * speed).makeByteArray()
-                        bytes += (joyStickSurfaceView.getPosY * speed * -1).makeByteArray()
-                        bytes += (horizontalStickSurfaceview.sendX * speed * -1).makeByteArray()
-                        bytes += (speed and 0xff).toByte()
-                        bytes += if (clawlerSwitch.isChecked) (1).toByte() else (0).toByte()
-                        ESPWebSocketClient.send(bytes.toByteString())
-                    }
-                    if (RPIisconnect) {
-                        var bytes = ByteArray(0)
-                        bytes += (verticalSurfaceview.sendY * 128).makeByteArray()
-                        bytes += (horizontalStickSurfaceview1.sendX * 100).makeByteArray()
-                        bytes += (horizontalStickSurfaceview2.sendX * 100).makeByteArray()
-                        bytes += (horizontalStickSurfaceview3.sendX * 50).makeByteArray()
-                        bytes += if (SwitchSeppuku.isChecked) (0).toByte() else (1).toByte()
-                        bytes += if (clawlerSwitch2.isChecked) (1).toByte() else (0).toByte()
-                        RPIWebSocketClient.send(bytes.toByteString())
-                    }
-                }
-            }, 100, 25
-        )
+        executor.addNode(Node)
 
-        SwitchSeppuku.setOnCheckedChangeListener { _, isChecked ->
-          if(isChecked){
-              RPIWebSocketClient.send("crawleron")
-          }
+        timer = Timer()
+
+        Switch.setOnCheckedChangeListener { buttonView, isChecked ->
+            val msg = UInt16()
+            if (isChecked) {
+                msg.data = 1
+                Powerpublisher.publish(msg)
+            } else {
+                msg.data = 0
+                Powerpublisher.publish(msg)
+            }
         }
 
-        SwitchSeppuku.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                RPIWebSocketClient.send("teston")
-            } else {
-                RPIWebSocketClient.send("testoff")
+        timer.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    val speed = UInt16()
+                    speed.data = speedseekBar.progress.toShort()
+                    Speedpublisher.publish(speed)
+
+                    val msg = Twist()
+                    val linear = Vector3()
+                    val angular = Vector3()
+
+                    linear.x = joyStickSurfaceView.getPosX.toDouble() * -1
+                    linear.y = joyStickSurfaceView.getPosY.toDouble() * -1
+                    angular.x = horizontalStickSurfaceview.getX.toDouble()
+                    angular.y = verticalSurfaceview.sendY.toDouble()
+
+                    msg.angular = angular
+                    msg.linear = linear
+                    JoyStickpublisher.publish(msg);
+                }
+            }, 100, 10
+        )
+    }
+
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+
+        // Check that the event came from a game controller
+        return if (event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
+            && event.action == MotionEvent.ACTION_MOVE) {
+
+            // Process the movements starting from the
+            // earliest historical position in the batch
+            (0 until event.historySize).forEach { i ->
+                // Process the event at historical position i
+                processJoystickInput(event, i)
             }
-        };
+            processJoystickInput(event, -1)
+            true
+        } else {
+            super.onGenericMotionEvent(event)
+        }
+    }
 
-        viewer.mode = MjpegView.MODE_FIT_WIDTH
-        viewer.isAdjustHeight = true
-        viewer.supportPinchZoomAndPan = false
-        viewer.setUrl(STREAM_URL)
+    private fun getCenteredAxis(
+        event: MotionEvent,
+        device: InputDevice,
+        axis: Int,
+        historyPos: Int
+    ): Float {
+        val range: InputDevice.MotionRange? = device.getMotionRange(axis, event.source)
 
-        ESPWebSocketClient.connect()
-        RPIWebSocketClient.connect()
+        // A joystick at rest does not always report an absolute position of
+        // (0,0). Use the getFlat() method to determine the range of values
+        // bounding the joystick axis center.
+        range?.apply {
+            val value: Float = if (historyPos < 0) {
+                event.getAxisValue(axis)
+            } else {
+                event.getHistoricalAxisValue(axis, historyPos)
+            }
+
+            // Ignore axis values that are within the 'flat' region of the
+            // joystick axis center.
+            if (Math.abs(value) > flat) {
+                return value
+            }
+        }
+        return 0f
+    }
+    private fun processJoystickInput(event: MotionEvent, historyPos: Int) {
+ 
+        val inputDevice = event.device
+        AXIS_X = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+        AXIS_Y = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Y, historyPos)
+        AXIS_Z = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Z, historyPos)
+        AXIS_RTRIGGER = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
+
+        Log.d("test", AXIS_RTRIGGER.toString())
+        joyStickSurfaceView.setPOS(AXIS_X, AXIS_Y)
+        horizontalStickSurfaceview.setx(AXIS_Z)
+        verticalSurfaceview.sety(AXIS_RTRIGGER)
     }
 
     override fun onPause() {
         super.onPause()
         Log.d("stop", "stop")
-        ESPWebSocketClient.close()
-        RPIWebSocketClient.close()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("stop", "stop")
-        ESPWebSocketClient.close()
-        RPIWebSocketClient.close()
     }
 
     override fun onRestart() {
         super.onRestart()
         Log.d("restart", "restart")
-        ESPWebSocketClient.connect()
-        RPIWebSocketClient.connect()
     }
 
-    private fun Float.makeByteArray() : ByteArray{
-        val bytes = ByteArray(4)
-        bytes[0] = (this.toRawBits() and 0xFF).toByte()
-        bytes[1] = ((this.toRawBits() ushr 8) and 0xFF).toByte()
-        bytes[2] = ((this.toRawBits() ushr 16) and 0xFF).toByte()
-        bytes[3] = ((this.toRawBits() ushr 24) and 0xFF).toByte()
-        return bytes
-    }
+    fun getGameControllerIds(): List<Int> {
+        val gameControllerDeviceIds = mutableListOf<Int>()
+        val deviceIds = InputDevice.getDeviceIds()
+        deviceIds.forEach { deviceId ->
+            InputDevice.getDevice(deviceId).apply {
 
+                // Verify that the device has gamepad buttons, control sticks, or both.
+                if (sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD
+                    || sources and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK) {
+                    // This device is a game controller. Store its device ID.
+                    gameControllerDeviceIds
+                        .takeIf { !it.contains(deviceId) }
+                        ?.add(deviceId)
+                }
+            }
+        }
+        return gameControllerDeviceIds
+    }
 }
-
 
 

@@ -28,6 +28,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     private var alphaStickPaint : Paint
 
     private var isTouched = false
+    private var islocked = false
 
     private lateinit var surfaceHolder : SurfaceHolder
     private val ALPHA_PAD_DEFAULT = 150
@@ -43,6 +44,16 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
 
     val sendY : Float
         get() = if (isTouched) (postionY - params.height  / 2) / (params.height - params.width) * 2 else 0f
+
+    fun sety(x : Float)
+    {
+        islocked = true
+        postionY = (x * (params.height - params.width)/2) + height/2
+        val canvas = surfaceHolder.lockCanvas()
+        drawBackground(canvas)
+        drawStick(canvas)
+        surfaceHolder.unlockCanvasAndPost(canvas)
+    }
 
     init {
         val res = context.resources
@@ -110,20 +121,22 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            isTouched = true
-            if (event.y < params.height - params.width / 2 && event.y - params.width / 2 > 0){
-                postionY  = event.y
-            }
-        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
-            if (event.y < params.height - params.width / 2 &&  event.y - params.width / 2 > 0){
-                postionY  = event.y
-            }
-        } else if (event.action == MotionEvent.ACTION_UP) {
+        if (event.action == MotionEvent.ACTION_UP) {
             isTouched = false
             postionY  = (params.height  / 2).toFloat()
-        }
+        } else {
+            if (event.y > params.height - params.width / 2) {
+                postionY = params.height - params.width / 2.0f
+            } else if (event.y - params.width / 2 < 0) {
+                postionY = params.width / 2.0f
+            } else {
+                postionY = event.y
+            }
 
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isTouched = true
+            }
+        }
         drawStick(canvas)
     }
 }

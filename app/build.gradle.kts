@@ -13,7 +13,6 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -22,6 +21,12 @@ android {
             cmake {
                 cppFlags += ""
             }
+        }
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your app.
+            //noinspection ChromeOsAbiSupport
+            abiFilters += "arm64-v8a"
         }
     }
 
@@ -77,8 +82,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation ("org.java-websocket:Java-WebSocket:1.5.1")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
     implementation ("com.perthcpe23.dev:android-mjpeg-view:1.1.2")
-
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 }
