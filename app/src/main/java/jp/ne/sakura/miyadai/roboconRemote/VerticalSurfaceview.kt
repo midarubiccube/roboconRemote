@@ -121,20 +121,22 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            isTouched = true
-            if (event.y < params.height - params.width / 2 && event.y - params.width / 2 > 0){
-                postionY  = event.y
-            }
-        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
-            if (event.y < params.height - params.width / 2 &&  event.y - params.width / 2 > 0){
-                postionY  = event.y
-            }
-        } else if (event.action == MotionEvent.ACTION_UP) {
+        if (event.action == MotionEvent.ACTION_UP) {
             isTouched = false
             postionY  = (params.height  / 2).toFloat()
-        }
+        } else {
+            if (event.y > params.height - params.width / 2) {
+                postionY = params.height - params.width / 2.0f
+            } else if (event.y - params.width / 2 < 0) {
+                postionY = params.width / 2.0f
+            } else {
+                postionY = event.y
+            }
 
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isTouched = true
+            }
+        }
         drawStick(canvas)
     }
 }

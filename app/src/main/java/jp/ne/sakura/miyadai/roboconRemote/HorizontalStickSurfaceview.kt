@@ -124,21 +124,23 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            isTouched = true
-            islocked = false
-            if (event.x < params.width - params.height / 2 && event.x - params.height / 2 > 0){
-                X  = event.x
-            }
-        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
-            if (event.x < params.width - params.height / 2 &&  event.x - params.height / 2 > 0){
-                X  = event.x
-            }
-        } else if (event.action == MotionEvent.ACTION_UP) {
+        if (event.action == MotionEvent.ACTION_UP) {
             isTouched = false
-            X  = (width  / 2).toFloat()
-        }
+            X  = (params.width  / 2).toFloat()
+        } else {
+            if (event.x > params.width - params.height / 2){
+                X = (params.width - params.height / 2).toFloat()
+            } else if (event.x - params.height / 2 < 0){
+                X = (params.height / 2).toFloat()
+            } else {
+                X  = event.x
+            }
 
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isTouched = true
+                islocked = false
+            }
+        }
         drawStick(canvas)
     }
 }

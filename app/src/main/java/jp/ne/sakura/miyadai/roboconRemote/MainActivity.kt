@@ -10,21 +10,24 @@ import com.example.ros2_android_test_app.ROSActivity
 import com.longdo.mjpegviewer.MjpegView
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
-import sensor_msgs.msg.Joy
-import org.ros2.rcljava.RCLJava
 import org.ros2.rcljava.node.BaseComposableNode
 import org.ros2.rcljava.publisher.Publisher
+import std_msgs.msg.UInt16
 import java.util.Timer
 import java.util.TimerTask
 
 class MainActivity : ROSActivity() {
     lateinit var viewer : MjpegView
     lateinit var Node : BaseComposableNode
-    lateinit var publisher: Publisher<Twist>
+
+    lateinit var JoyStickpublisher: Publisher<Twist>
+    lateinit var Powerpublisher: Publisher<UInt16>
+    lateinit var Speedpublisher: Publisher<UInt16>
+
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
-    lateinit var SwitchSeppuku : Switch
+    lateinit var Switch : Switch
     lateinit var speedseekBar: SeekBar
     var AXIS_X : Float = 0.0f
     var AXIS_Y : Float = 0.0f
@@ -38,19 +41,25 @@ class MainActivity : ROSActivity() {
 
         Node = BaseComposableNode("android_controller")//ノード名を設定
 
-        publisher = Node.node.createPublisher(
-            geometry_msgs.msg.Twist::class.java, "/turtle1/cmd_vel" //Publisherを作成
+        JoyStickpublisher = Node.node.createPublisher(
+            Twist::class.java, "/turtle1/cmd_vel" //Publisherを作成
+        )
+
+        Powerpublisher = Node.node.createPublisher(
+            UInt16::class.java, "/turtle1/poweron" //Publisherを作成
+        )
+
+        Speedpublisher = Node.node.createPublisher(
+            UInt16::class.java, "/turtle1/speed" //Publisherを作成
         )
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
 
-        SwitchSeppuku = findViewById(R.id.switch_seppuku)
+        Switch = findViewById(R.id.switch_seppuku)
 
         speedseekBar = findViewById(R.id.speed_changer)
-        viewer = findViewById(R.id.mjpeg_view)
-
 
         speedseekBar.min = 20
         speedseekBar.max = 120
@@ -59,19 +68,37 @@ class MainActivity : ROSActivity() {
         executor.addNode(Node)
 
         timer = Timer()
+
+        Switch.setOnCheckedChangeListener { buttonView, isChecked ->
+            val msg = UInt16()
+            if (isChecked) {
+                msg.data = 1
+                Powerpublisher.publish(msg)
+            } else {
+                msg.data = 0
+                Powerpublisher.publish(msg)
+            }
+        }
+
         timer.schedule(
             object : TimerTask() {
                 override fun run() {
-                    val speed = speedseekBar.progress
-                    val msg = geometry_msgs.msg.Twist()
+                    val speed = UInt16()
+                    speed.data = speedseekBar.progress.toShort()
+                    Speedpublisher.publish(speed)
+
+                    val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
+
                     linear.x = joyStickSurfaceView.getPosX.toDouble() * -1
                     linear.y = joyStickSurfaceView.getPosY.toDouble() * -1
-                    angular.x = horizontalStickSurfaceview.getX.toDouble() * -1
-                    msg.linear = linear
+                    angular.x = horizontalStickSurfaceview.getX.toDouble()
+                    angular.y = verticalSurfaceview.sendY.toDouble()
+
                     msg.angular = angular
-                    publisher.publish(msg);
+                    msg.linear = linear
+                    JoyStickpublisher.publish(msg);
                 }
             }, 100, 10
         )
@@ -89,8 +116,6 @@ class MainActivity : ROSActivity() {
                 // Process the event at historical position i
                 processJoystickInput(event, i)
             }
-
-            // Process the current movement sample in the batch (position -1)
             processJoystickInput(event, -1)
             true
         } else {
