@@ -47,10 +47,6 @@ class MainActivity : ComponentActivity() {
 
     lateinit var Switch : Switch
     lateinit var speedseekBar: SeekBar
-    lateinit var INPUTID: EditText
-    lateinit var Button : Button
-
-    var power_status = false
 
     var R1Status = false
     var L1Status = false
@@ -75,9 +71,6 @@ class MainActivity : ComponentActivity() {
 
         speedseekBar = findViewById(R.id.speed_changer)
 
-        INPUTID = findViewById(R.id.editid)
-        Button = findViewById(R.id.button)
-
         speedseekBar.min = 50
         speedseekBar.max = 100
         speedseekBar.progress = 75
@@ -96,20 +89,6 @@ class MainActivity : ComponentActivity() {
                 Powerpublisher.publish(msg)
             }
         }
-        Button.setOnClickListener {
-            timer.cancel()
-            send_timer.cancel()
-            RCLJava.shutdown()
-            initROS()
-            timer = Timer()
-            timer.schedule(
-                object : TimerTask() {
-                    override fun run() {
-                        val runnable = Runnable { executor.spinSome() }
-                        handler.post(runnable)
-                    }
-                }, SPINNER_DELAY, SPINNER_PERIOD_MS)
-        }
 
         val mediaFileUriStr =
             "android.resource://$packageName/"
@@ -119,12 +98,21 @@ class MainActivity : ComponentActivity() {
 
         stopmusic.setDataSource(this, Uri.parse(mediaFileUriStr+R.raw.b))
         stopmusic.prepareAsync();
+
+        initROS()
+        timer = Timer()
+        timer.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    val runnable = Runnable { executor.spinSome() }
+                    handler.post(runnable)
+                }
+            }, SPINNER_DELAY, SPINNER_PERIOD_MS)
     }
 
     private fun initROS(){
-        Os.setenv("ROS_DOMAIN_ID", INPUTID.text.toString(), true)
+        Os.setenv("ROS_DOMAIN_ID", 0.toString(), true)
         this.handler = Handler(mainLooper)
-        Log.d("ID", INPUTID.text.toString())
         RCLJava.rclJavaInit()
         this.executor = this.createExecutor()
 

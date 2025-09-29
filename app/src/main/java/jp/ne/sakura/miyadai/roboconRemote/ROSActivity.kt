@@ -34,7 +34,7 @@ open class ROSActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.handler = Handler(mainLooper)
-        Os.setenv("ROS_DOMAIN_ID", "123", true)
+        Os.setenv("ROS_DOMAIN_ID", "0", true)
         RCLJava.rclJavaInit()
         this.executor = this.createExecutor()
     }
