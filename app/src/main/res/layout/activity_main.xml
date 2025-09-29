@@ -6,17 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <TextView
-        android:id="@+id/text_speed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="32dp"
-        android:text="速度"
-        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <SeekBar
         android:id="@+id/speed_changer"
         android:layout_width="0dp"
@@ -27,43 +16,73 @@
         android:thumb="@drawable/bar_thumb"
         app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toEndOf="@+id/text_speed"
-        app:layout_constraintTop_toTopOf="@+id/tedt" />
+        app:layout_constraintStart_toEndOf="@+id/text_speed" />
+
+    <jp.ne.sakura.miyadai.roboconRemote.VerticalSurfaceview
+        android:id="@+id/verticalSurfaceview"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
+        app:layout_constraintDimensionRatio="1:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="32dp"
+        android:text="speed"
+        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/text_speed3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="32dp"
+        android:text="ID"
+        app:layout_constraintBottom_toTopOf="@+id/text_speed"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/text_seppuku"
         android:layout_width="wrap_content"
         android:layout_height="21dp"
         android:layout_marginEnd="16dp"
-        android:text="電源"
+        android:text="Power Switch"
         app:layout_constraintBottom_toBottomOf="@+id/switch_seppuku"
         app:layout_constraintEnd_toStartOf="@+id/switch_seppuku"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintTop_toTopOf="@+id/switch_seppuku" />
+
 
     <Switch
         android:id="@+id/switch_seppuku"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="64dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="132dp"
         android:background="@drawable/swtich_track"
         android:showText="false"
         android:thumb="@drawable/switch_thumb"
         android:track="@drawable/swtich_track"
         app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
-        app:layout_constraintEnd_toStartOf="@+id/verticalSurfaceview"
-        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
-
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview4" />
 
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"
-        android:layout_width="0dp"
+        android:layout_width="172dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="4.12:1"
+        app:layout_constraintDimensionRatio="4:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
 
@@ -80,15 +99,14 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <jp.ne.sakura.miyadai.roboconRemote.VerticalSurfaceview
-        android:id="@+id/verticalSurfaceview"
+        android:id="@+id/verticalSurfaceview2"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
-        app:layout_constraintDimensionRatio="1:4.12"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tedt" />
+        android:layout_marginStart="32dp"
+        app:layout_constraintBottom_toBottomOf="@+id/verticalSurfaceview"
+        app:layout_constraintDimensionRatio="1:4"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_after_guideline"
@@ -104,11 +122,25 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.3" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/tedt"
+    <EditText
+        android:id="@+id/editid"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:ems="10"
+        android:inputType="number"
+        android:text="0"
+        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
+        app:layout_constraintEnd_toStartOf="@+id/button"
+        app:layout_constraintStart_toEndOf="@+id/text_speed3" />
+
+    <Button
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:barrierDirection="top"
-        app:layout_constraintGuide_begin="231dp" />
+        android:layout_marginBottom="16dp"
+        android:text="set"
+        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
