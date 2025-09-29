@@ -79,6 +79,17 @@ class MainActivity : ComponentActivity() {
         this.handler = Handler(mainLooper)
         this.executor = this.createExecutor()
 
+        val mediaFileUriStr =
+            "android.resource://$packageName/"
+        val mediaFileUri = Uri.parse(mediaFileUriStr+R.raw.a)
+        startmusic.setDataSource(this, mediaFileUri)
+        startmusic.prepareAsync();
+
+        stopmusic.setDataSource(this, Uri.parse(mediaFileUriStr+R.raw.b))
+        stopmusic.prepareAsync();
+
+        initROS()
+
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
             val msg = UInt16()
             if (isChecked) {
@@ -90,16 +101,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val mediaFileUriStr =
-            "android.resource://$packageName/"
-        val mediaFileUri = Uri.parse(mediaFileUriStr+R.raw.a)
-        startmusic.setDataSource(this, mediaFileUri)
-        startmusic.prepareAsync();
-
-        stopmusic.setDataSource(this, Uri.parse(mediaFileUriStr+R.raw.b))
-        stopmusic.prepareAsync();
-
-        initROS()
         timer = Timer()
         timer.schedule(
             object : TimerTask() {
@@ -138,14 +139,14 @@ class MainActivity : ComponentActivity() {
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
-                    if (Switch.isChecked){
-                        linear.x = joyStickSurfaceView.getPosX.toDouble()
-                        linear.y = joyStickSurfaceView.getPosY.toDouble() * -1
-                        linear.z = verticalSurfaceview2.sendY.toDouble()
-                        angular.x = horizontalStickSurfaceview.getX.toDouble()
-                        angular.y = verticalSurfaceview.sendY.toDouble()
-                        angular.z = speedseekBar.progress.toDouble()
-                    }
+
+                    linear.x = joyStickSurfaceView.getAngle()
+                    linear.y = joyStickSurfaceView.getDistance.toDouble()
+                    linear.z = horizontalStickSurfaceview.getX.toDouble()
+                    angular.x = verticalSurfaceview2.getY.toDouble()
+                    angular.y = verticalSurfaceview.getY.toDouble()
+                    angular.z = speedseekBar.progress.toDouble()
+
                     msg.angular = angular
                     msg.linear = linear
                     JoyStickpublisher.publish(msg);
@@ -272,6 +273,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        val msg = UInt16()
+        msg.data = 0
+        Powerpublisher.publish(msg)
         send_timer.cancel()
         timer.cancel()
         if (Switch.isChecked){

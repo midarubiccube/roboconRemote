@@ -11,6 +11,7 @@ import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -31,7 +32,7 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private val ALPHA_STICK_DEFAULT = 180
     private var alphaStick = 200
     private var alphaLayout = 200
-    var offset = 0
+    private var offset = 0
     private var surfaceHolder: SurfaceHolder? = null
     private var params: ViewGroup.LayoutParams? = null
     private var stickTall = 0
@@ -40,14 +41,33 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
     private var positionX = 0
     private var positionY = 0
     private var distance = 0f
-    private val jsEntity // joy stick entity
-            : JoyStickEntity
+    private val jsEntity : JoyStickEntity
     private var alphaBacksPaint: Paint? = null
     private var alphaStickPaint: Paint? = null
     private val res: Resources
     private var background: Bitmap? = null
     private var stick: Bitmap? = null
 
+    val getDistance : Float
+    get() = sqrt(getPosX.toDouble().pow(2.0) + getPosY.toDouble().pow(2.0)).toFloat()
+
+    fun getAngle(): Double {
+        val x = getPosX
+        val y = getPosY
+        if (x == 0f && y == 0f){
+            return 0.0
+        } else if (x >= 0 && y >= 0) {
+            return Math.toDegrees(atan((y / x).toDouble())) + 90
+        } else if (x < 0 && y >= 0) {
+            return Math.toDegrees(atan((y / x).toDouble())) + 270
+        } else if (x < 0 && y < 0){
+            return Math.toDegrees(atan((y / x).toDouble())) + 270
+        } else if (x >= 0 && y < 0) {
+            return Math.toDegrees(atan((y / x).toDouble())) + 90
+        } else {
+            return 0.0
+        }
+    }
 
     val getPosX : Float
         get() = if (jsEntity.isTouched()|| jsEntity.islock()) {
@@ -199,18 +219,12 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
             } else {
                 var x = (cos(
                     Math.toRadians(
-                        calAngle(
-                            positionX.toFloat(),
-                            positionY.toFloat()
-                        )
+                        calAngle()
                     )
                 ) * midDistanceX).toFloat()
                 var y = (sin(
                     Math.toRadians(
-                        calAngle(
-                            positionX.toFloat(),
-                            positionY.toFloat()
-                        )
+                        calAngle()
                     )
                 ) * midDistanceY).toFloat()
                 x += (params!!.width / 2).toFloat()
@@ -257,13 +271,22 @@ class JoyStickSurfaceView(context: Context, attrs: AttributeSet?) :
         stickHeight = height
     }
 
-    private fun calAngle(x: Float, y: Float): Double {
-        if (x >= 0 && y >= 0) return Math.toDegrees(atan((y / x).toDouble())) else if (x < 0 && y >= 0) return Math.toDegrees(
-            atan((y / x).toDouble())
-        ) + 180 else if (x < 0 && y < 0) return Math.toDegrees(atan((y / x).toDouble())) + 180 else if (x >= 0 && y < 0) return Math.toDegrees(
-            atan((y / x).toDouble())
-        ) + 360
-        return 0.0
+    fun calAngle(): Double {
+        val x = positionX.toFloat()
+        val y = positionY.toFloat()
+        if (x == 0f && y == 0f){
+            return 0.0
+        } else if (x >= 0 && y >= 0) {
+            return Math.toDegrees(atan((y / x).toDouble()))
+        } else if (x < 0 && y >= 0) {
+            return Math.toDegrees(atan((y / x).toDouble())) + 180
+        } else if (x < 0 && y < 0){
+            return Math.toDegrees(atan((y / x).toDouble())) + 180
+        } else if (x >= 0 && y < 0) {
+            return Math.toDegrees(atan((y / x).toDouble())) + 360
+        } else {
+            return 0.0
+        }
     }
 
     private inner class JoyStickEntity {

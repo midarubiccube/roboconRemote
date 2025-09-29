@@ -42,7 +42,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
             alphaBacksPaint.alpha = alpha
         }
 
-    val sendY : Float
+    val getY : Float
         get() = if (isTouched || islocked) (postionY - height  / 2) / (params.height - params.width) * 2 else 0f
 
     fun sety(x : Float)
