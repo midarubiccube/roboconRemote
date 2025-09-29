@@ -46,7 +46,7 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
         }
 
     val getX : Float
-        get() = if (isTouched || islocked) (X - width  / 2) / (params.width - params.height) * 2 else 0f
+        get() = if (isTouched || islocked) (X - width / 2) / (params.width - params.height)*2 else 0f
 
     fun setx(x : Float)
     {

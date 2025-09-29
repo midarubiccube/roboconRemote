@@ -43,7 +43,7 @@ class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
         }
 
     val sendY : Float
-        get() = if (isTouched) (postionY - params.height  / 2) / (params.height - params.width) * 2 else 0f
+        get() = if (isTouched || islocked) (postionY - height  / 2) / (params.height - params.width) * 2 else 0f
 
     fun sety(x : Float)
     {
