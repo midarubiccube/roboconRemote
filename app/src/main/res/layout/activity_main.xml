@@ -27,7 +27,8 @@
         app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
         app:layout_constraintDimensionRatio="1:4"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/switch_seppuku2"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/text_speed"
@@ -62,6 +63,20 @@
         app:layout_constraintBottom_toTopOf="@+id/speed_changer"
         app:layout_constraintStart_toEndOf="@+id/text_seppuku"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/switch_seppuku2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/swtich_track"
+        android:showText="false"
+        android:thumb="@drawable/switch_thumb"
+        android:track="@drawable/swtich_track"
+        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.326" />
 
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"

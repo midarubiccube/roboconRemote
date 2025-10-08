@@ -9,10 +9,9 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
-import android.widget.Button
-import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Switch
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
@@ -21,6 +20,9 @@ import org.ros2.rcljava.executors.Executor
 import org.ros2.rcljava.executors.SingleThreadedExecutor
 import org.ros2.rcljava.node.BaseComposableNode
 import org.ros2.rcljava.publisher.Publisher
+import org.ros2.rcljava.subscription.Subscription
+import std_msgs.msg.Float32
+import std_msgs.msg.String
 import std_msgs.msg.UInt16
 import java.util.Timer
 import java.util.TimerTask
@@ -29,6 +31,7 @@ import java.util.TimerTask
 class MainActivity : ComponentActivity() {
     lateinit var executor: Executor
     lateinit var send_timer: Timer
+    lateinit var send_power : Timer
     lateinit var timer : Timer
     lateinit var handler: Handler
 
@@ -39,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
     lateinit var JoyStickpublisher: Publisher<Twist>
     lateinit var Powerpublisher: Publisher<UInt16>
+    lateinit var statusSub : Subscription<Float32>
 
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
@@ -46,7 +50,9 @@ class MainActivity : ComponentActivity() {
     lateinit var verticalSurfaceview2: VerticalSurfaceview
 
     lateinit var Switch : Switch
+    lateinit var Switch2 : Switch
     lateinit var speedseekBar: SeekBar
+    lateinit var text : TextView
 
     var R1Status = false
     var L1Status = false
@@ -68,6 +74,7 @@ class MainActivity : ComponentActivity() {
         verticalSurfaceview2 = findViewById(R.id.verticalSurfaceview2)
 
         Switch = findViewById(R.id.switch_seppuku)
+        Switch2 = findViewById(R.id.switch_seppuku2)
 
         speedseekBar = findViewById(R.id.speed_changer)
 
@@ -141,17 +148,36 @@ class MainActivity : ComponentActivity() {
                     val angular = Vector3()
 
                     linear.x = joyStickSurfaceView.getAngle()
-                    linear.y = joyStickSurfaceView.getDistance.toDouble()
-                    linear.z = horizontalStickSurfaceview.getX.toDouble()
+                    linear.y = joyStickSurfaceView.getDistance.toDouble() * speedseekBar.progress.toDouble()
+                    linear.z = horizontalStickSurfaceview.getX.toDouble() *speedseekBar.progress.toDouble()
                     angular.x = verticalSurfaceview2.getY.toDouble()
                     angular.y = verticalSurfaceview.getY.toDouble()
-                    angular.z = speedseekBar.progress.toDouble()
+                    if (Switch.isChecked) {
+                        angular.z = 1.0
+                    } else{
+                        angular.z = 0.0
+                    }
 
                     msg.angular = angular
                     msg.linear = linear
                     JoyStickpublisher.publish(msg);
                 }
             }, 100, 100
+        )
+        send_power = Timer()
+        send_power.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    val msg = UInt16()
+                    if (Switch.isChecked)
+                    {
+                        msg.data = 1
+                    } else{
+                        msg.data = 0
+                    }
+                    Powerpublisher.publish(msg)
+                }
+            }, 100, 500
         )
     }
 
@@ -275,9 +301,10 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         val msg = UInt16()
         msg.data = 0
-        Powerpublisher.publish(msg)
+        //Powerpublisher.publish(msg)
         send_timer.cancel()
         timer.cancel()
+        send_power.cancel()
         if (Switch.isChecked){
             stopmusic.start()
         }
@@ -294,7 +321,7 @@ class MainActivity : ComponentActivity() {
         }
         timer.cancel()
         send_timer.cancel()
-
+        send_power.cancel()
         startmusic.release();  // （4）
         Log.d("stop", "stop")
     }
