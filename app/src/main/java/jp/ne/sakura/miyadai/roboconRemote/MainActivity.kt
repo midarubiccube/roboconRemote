@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
+import ros2can.msg.PWRManagerTX
 import org.ros2.rcljava.RCLJava
 import org.ros2.rcljava.executors.Executor
 import org.ros2.rcljava.executors.SingleThreadedExecutor
@@ -35,14 +36,10 @@ class MainActivity : ComponentActivity() {
     lateinit var timer : Timer
     lateinit var handler: Handler
 
-    lateinit var startmusic : MediaPlayer
-    lateinit var stopmusic : MediaPlayer
-
     lateinit var Node : BaseComposableNode
 
     lateinit var JoyStickpublisher: Publisher<Twist>
-    lateinit var Powerpublisher: Publisher<UInt16>
-    lateinit var statusSub : Subscription<Float32>
+    lateinit var Powerpublisher: Publisher<PWRManagerTX>
 
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
@@ -65,9 +62,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        startmusic = MediaPlayer()
-        stopmusic = MediaPlayer()
-
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
@@ -86,24 +80,16 @@ class MainActivity : ComponentActivity() {
         this.handler = Handler(mainLooper)
         this.executor = this.createExecutor()
 
-        val mediaFileUriStr =
-            "android.resource://$packageName/"
-        val mediaFileUri = Uri.parse(mediaFileUriStr+R.raw.a)
-        startmusic.setDataSource(this, mediaFileUri)
-        startmusic.prepareAsync();
-
-        stopmusic.setDataSource(this, Uri.parse(mediaFileUriStr+R.raw.b))
-        stopmusic.prepareAsync();
-
         initROS()
 
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
-            val msg = UInt16()
+            val msg = PWRManagerTX()
             if (isChecked) {
-                msg.data = 1
+                msg.priority = 0
+                msg.powerstatus = true
                 Powerpublisher.publish(msg)
             } else {
-                msg.data = 0
+                msg.powerstatus = false
                 Powerpublisher.publish(msg)
             }
         }
@@ -131,7 +117,7 @@ class MainActivity : ComponentActivity() {
         )
 
         Powerpublisher = Node.node.createPublisher(
-            UInt16::class.java, "/turtle1/poweron" //Publisherを作成
+            PWRManagerTX::class.java, "PWRManager_TX" //Publisherを作成
         )
 
         executor.addNode(Node)
@@ -168,12 +154,14 @@ class MainActivity : ComponentActivity() {
         send_power.schedule(
             object : TimerTask() {
                 override fun run() {
-                    val msg = UInt16()
+                    val msg = PWRManagerTX()
                     if (Switch.isChecked)
                     {
-                        msg.data = 1
+                        msg.priority = 0
+                        msg.powerstatus = true
                     } else{
-                        msg.data = 0
+                        msg.priority = 0
+                        msg.powerstatus = false
                     }
                     Powerpublisher.publish(msg)
                 }
@@ -299,39 +287,29 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        val msg = UInt16()
-        msg.data = 0
-        //Powerpublisher.publish(msg)
+
+        val msg = PWRManagerTX()
+        msg.priority = 0
+        msg.powerstatus = false
+        Powerpublisher.publish(msg)
+
         send_timer.cancel()
         timer.cancel()
         send_power.cancel()
-        if (Switch.isChecked){
-            stopmusic.start()
-        }
         Log.d("stop", "stop")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if(startmusic.isPlaying()) {  // （2）
-            startmusic.stop();  // （3）
-        }
-        if(startmusic.isPlaying()) {  // （2）
-            startmusic.stop();  // （3）
-        }
         timer.cancel()
         send_timer.cancel()
         send_power.cancel()
-        startmusic.release();  // （4）
         Log.d("stop", "stop")
     }
 
     override fun onRestart() {
         super.onRestart()
         setSendTimer()
-        if (Switch.isChecked){
-            startmusic.start()
-        }
         Log.d("restart", "restart")
     }
 
