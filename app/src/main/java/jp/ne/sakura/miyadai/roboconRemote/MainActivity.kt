@@ -114,16 +114,16 @@ class MainActivity : ComponentActivity() {
         Node = BaseComposableNode("android_controller")//ノード名を設定
 
         JoyStickpublisher = Node.node.createPublisher(
-            Twist::class.java, "/turtle1/cmd_vel" //Publisherを作成
+            Twist::class.java, "/asi/cmd_vel" //Publisherを作成
         )
 
         Powerpublisher = Node.node.createPublisher(
-            PWRManagerTX::class.java, "PWRManager_TX" //Publisherを作成
+            PWRManagerTX::class.java, "PWRManager/TX" //Publisherを作成
         )
 
         PowerSubscriber = Node.node.createSubscription(
             PWRManagerRX::class.java,
-            "PWRManager_RX",
+            "PWRManager/RX",
             { msg -> PWR_RX(msg) }
         )
 
