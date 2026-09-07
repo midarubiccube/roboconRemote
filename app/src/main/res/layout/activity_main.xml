@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <SeekBar
@@ -18,18 +18,6 @@
         app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toEndOf="@+id/text_speed" />
-
-    <jp.ne.sakura.miyadai.roboconRemote.VerticalSurfaceview
-        android:id="@+id/verticalSurfaceview"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/horizontalStickSurfaceview"
-        app:layout_constraintDimensionRatio="1:4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switch_seppuku2"
-        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/text_speed"
@@ -47,12 +35,21 @@
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:text="Power Switch"
-        app:layout_constraintBottom_toBottomOf="@+id/switch_seppuku"
+        app:layout_constraintBottom_toBottomOf="@+id/switch_power"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/switch_seppuku" />
+        app:layout_constraintTop_toTopOf="@+id/switch_power" />
+
+    <TextView
+        android:id="@+id/text_seppuku2"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:text="Power Switch"
+        app:layout_constraintBottom_toBottomOf="@+id/switch_power"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/switch_power" />
 
     <Switch
-        android:id="@+id/switch_seppuku"
+        android:id="@+id/switch_power"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -64,20 +61,6 @@
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toEndOf="@+id/text_seppuku"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Switch
-        android:id="@+id/switch_seppuku2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/swtich_track"
-        android:showText="false"
-        android:thumb="@drawable/switch_thumb"
-        android:track="@drawable/swtich_track"
-        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.326" />
 
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"
@@ -102,37 +85,76 @@
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <jp.ne.sakura.miyadai.roboconRemote.VerticalSurfaceview
-        android:id="@+id/verticalSurfaceview2"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toBottomOf="@+id/verticalSurfaceview"
-        app:layout_constraintDimensionRatio="1:4"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toTopOf="@+id/verticalSurfaceview" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_after_guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8" />
+        app:layout_constraintGuide_percent="0.7" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_before_guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.18" />
+        app:layout_constraintGuide_percent="0.3" />
 
-    <com.longdo.mjpegviewer.MjpegView
-        android:id="@+id/mjpeg_view"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_before_guideline"
+    <TextView
+        android:id="@+id/battery1_vol_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:text="バッテリ1電圧"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/battery1_vol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/battery1_vol_text"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/battery2_vol_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:text="バッテリ2電圧"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/battery1_vol_text" />
+
+    <TextView
+        android:id="@+id/battery2_vol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/battery2_vol_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/battery2_vol_text"
+        app:layout_constraintTop_toTopOf="@+id/battery2_vol_text" />
+
+    <TextView
+        android:id="@+id/current_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:text="電流値"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/battery2_vol_text" />
+
+    <TextView
+        android:id="@+id/current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        app:layout_constraintBottom_toBottomOf="@+id/current_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/current_text"
+        app:layout_constraintTop_toTopOf="@+id/current_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

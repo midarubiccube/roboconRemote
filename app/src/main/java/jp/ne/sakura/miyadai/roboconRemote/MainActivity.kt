@@ -1,7 +1,5 @@
 package jp.ne.sakura.miyadai.roboconRemote
 
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.system.Os
@@ -12,22 +10,17 @@ import android.view.MotionEvent
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import com.longdo.mjpegviewer.MjpegView
-import com.longdo.mjpegviewer.MjpegViewError
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
-import ros2can.msg.PWRManagerTX
 import org.ros2.rcljava.RCLJava
 import org.ros2.rcljava.executors.Executor
 import org.ros2.rcljava.executors.SingleThreadedExecutor
 import org.ros2.rcljava.node.BaseComposableNode
 import org.ros2.rcljava.publisher.Publisher
 import org.ros2.rcljava.subscription.Subscription
-import std_msgs.msg.Float32
-import std_msgs.msg.String
-import std_msgs.msg.UInt16
+import ros2can.msg.PWRManagerRX
+import ros2can.msg.PWRManagerTX
 import java.util.Timer
 import java.util.TimerTask
 
@@ -42,18 +35,19 @@ class MainActivity : ComponentActivity() {
     lateinit var Node : BaseComposableNode
 
     lateinit var JoyStickpublisher: Publisher<Twist>
+
     lateinit var Powerpublisher: Publisher<PWRManagerTX>
+    lateinit var PowerSubscriber: Subscription<PWRManagerRX>
 
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
-    lateinit var verticalSurfaceview: VerticalSurfaceview
-    lateinit var verticalSurfaceview2: VerticalSurfaceview
-    lateinit var mjpegView : MjpegView
 
     lateinit var Switch : Switch
-    lateinit var Switch2 : Switch
     lateinit var speedseekBar: SeekBar
-    lateinit var text : TextView
+
+    lateinit var battery1_vol : TextView
+    lateinit var battery2_vol : TextView
+    lateinit var current_text : TextView
 
     var R1Status = false
     var L1Status = false
@@ -62,19 +56,20 @@ class MainActivity : ComponentActivity() {
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
 
+    var AXIS = FloatArray(8)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
-        verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
-        verticalSurfaceview2 = findViewById(R.id.verticalSurfaceview2)
 
-        mjpegView = findViewById(R.id.mjpeg_view)
+        Switch = findViewById(R.id.switch_power)
 
-        Switch = findViewById(R.id.switch_seppuku)
-        Switch2 = findViewById(R.id.switch_seppuku2)
+        battery1_vol = findViewById(R.id.battery1_vol)
+        battery2_vol = findViewById(R.id.battery2_vol)
+        current_text = findViewById(R.id.current)
 
         speedseekBar = findViewById(R.id.speed_changer)
 
@@ -87,7 +82,6 @@ class MainActivity : ComponentActivity() {
         this.executor = this.createExecutor()
 
         initROS()
-        loadIpCam()
 
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
             val msg = PWRManagerTX()
@@ -127,16 +121,20 @@ class MainActivity : ComponentActivity() {
             PWRManagerTX::class.java, "PWRManager_TX" //Publisherを作成
         )
 
+        PowerSubscriber = Node.node.createSubscription(
+            PWRManagerRX::class.java,
+            "PWRManager_RX",
+            { msg -> PWR_RX(msg) }
+        )
+
         executor.addNode(Node)
         setSendTimer()
     }
-
-    fun loadIpCam() {
-        mjpegView.setMode(MjpegView.MODE_FIT_WIDTH);
-        mjpegView.setAdjustHeight(true);
-        mjpegView.setSupportPinchZoomAndPan(true);
-        mjpegView.setUrl("http://192.168.0.38:8080/?action=stream");
-        mjpegView.startStream();
+    private fun  PWR_RX(msg: PWRManagerRX)
+    {
+        battery1_vol.text = msg.battery1Voltage.toString()
+        battery2_vol.text = msg.battery2Voltage.toString()
+        current_text.text = msg.current.toString()
     }
 
     private fun setSendTimer(){
@@ -148,11 +146,9 @@ class MainActivity : ComponentActivity() {
                     val linear = Vector3()
                     val angular = Vector3()
 
-                    linear.x = joyStickSurfaceView.getAngle()
-                    linear.y = joyStickSurfaceView.getDistance.toDouble() * speedseekBar.progress.toDouble()
-                    linear.z = horizontalStickSurfaceview.getX.toDouble() *speedseekBar.progress.toDouble()
-                    angular.x = verticalSurfaceview2.getY.toDouble()
-                    angular.y = verticalSurfaceview.getY.toDouble()
+                    linear.x = AXIS[0].toDouble()
+                    linear.y = AXIS[1].toDouble()
+                    linear.z = AXIS[2].toDouble()
                     if (Switch.isChecked) {
                         angular.z = 1.0
                     } else{
@@ -231,19 +227,12 @@ class MainActivity : ComponentActivity() {
     private fun processJoystickInput(event: MotionEvent, historyPos: Int) {
  
         val inputDevice = event.device
-        val AXIS_X = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
-        val AXIS_Y = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Y, historyPos)
-        val AXIS_Z = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_Z, historyPos)
-        var AXIS_RTRIGGER = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
-        val AXIS_LTRIGGER = getCenteredAxis(event,  inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
         val speed = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
 
-        joyStickSurfaceView.setPOS(AXIS_X, AXIS_Y)
-        horizontalStickSurfaceview.setx(AXIS_Z)
-        verticalSurfaceview.sety(if (R1Status) AXIS_RTRIGGER * -1.0f else AXIS_RTRIGGER)
-        verticalSurfaceview2.sety(if (L1Status) AXIS_LTRIGGER * -1.0f else AXIS_LTRIGGER)
+        AXIS[0] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
+        AXIS[1] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+        AXIS[2] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
         speedseekBar.progress += speed.toInt()*5
-
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -254,7 +243,6 @@ class MainActivity : ComponentActivity() {
                     // Handle gamepad and D-pad button presses to navigate the ship
                     KeyEvent.KEYCODE_BUTTON_R1 -> R1Status = false
                     KeyEvent.KEYCODE_BUTTON_L1 -> L1Status = false
-                    KeyEvent.KEYCODE_DPAD_LEFT -> Log.d("tezt", "tesr")
 
                     else -> {
                         handled = false
@@ -291,7 +279,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         timer = Timer()
-        loadIpCam()
         timer.schedule(
             object : TimerTask() {
                 override fun run() {
