@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
     <SeekBar
@@ -44,8 +45,7 @@
     <TextView
         android:id="@+id/text_seppuku"
         android:layout_width="wrap_content"
-        android:layout_height="21dp"
-        android:layout_marginStart="8dp"
+        android:layout_height="20dp"
         android:text="Power Switch"
         app:layout_constraintBottom_toBottomOf="@+id/switch_seppuku"
         app:layout_constraintStart_toStartOf="parent"
@@ -55,12 +55,13 @@
         android:id="@+id/switch_seppuku"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="8dp"
         android:background="@drawable/swtich_track"
         android:showText="false"
         android:thumb="@drawable/switch_thumb"
         android:track="@drawable/swtich_track"
         app:layout_constraintBottom_toTopOf="@+id/speed_changer"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toEndOf="@+id/text_seppuku"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -116,13 +117,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.65" />
+        app:layout_constraintGuide_percent="0.8" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_before_guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.4" />
+        app:layout_constraintGuide_percent="0.18" />
+
+    <com.longdo.mjpegviewer.MjpegView
+        android:id="@+id/mjpeg_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

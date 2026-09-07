@@ -12,7 +12,10 @@ import android.view.MotionEvent
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import com.longdo.mjpegviewer.MjpegView
+import com.longdo.mjpegviewer.MjpegViewError
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
 import ros2can.msg.PWRManagerTX
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var verticalSurfaceview: VerticalSurfaceview
     lateinit var verticalSurfaceview2: VerticalSurfaceview
+    lateinit var mjpegView : MjpegView
 
     lateinit var Switch : Switch
     lateinit var Switch2 : Switch
@@ -67,6 +71,8 @@ class MainActivity : ComponentActivity() {
         verticalSurfaceview = findViewById(R.id.verticalSurfaceview)
         verticalSurfaceview2 = findViewById(R.id.verticalSurfaceview2)
 
+        mjpegView = findViewById(R.id.mjpeg_view)
+
         Switch = findViewById(R.id.switch_seppuku)
         Switch2 = findViewById(R.id.switch_seppuku2)
 
@@ -81,6 +87,7 @@ class MainActivity : ComponentActivity() {
         this.executor = this.createExecutor()
 
         initROS()
+        loadIpCam()
 
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
             val msg = PWRManagerTX()
@@ -122,6 +129,14 @@ class MainActivity : ComponentActivity() {
 
         executor.addNode(Node)
         setSendTimer()
+    }
+
+    fun loadIpCam() {
+        mjpegView.setMode(MjpegView.MODE_FIT_WIDTH);
+        mjpegView.setAdjustHeight(true);
+        mjpegView.setSupportPinchZoomAndPan(true);
+        mjpegView.setUrl("http://192.168.0.38:8080/?action=stream");
+        mjpegView.startStream();
     }
 
     private fun setSendTimer(){
@@ -276,6 +291,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         timer = Timer()
+        loadIpCam()
         timer.schedule(
             object : TimerTask() {
                 override fun run() {
@@ -317,24 +333,6 @@ class MainActivity : ComponentActivity() {
         return SingleThreadedExecutor()
     }
 
-    fun getGameControllerIds(): List<Int> {
-        val gameControllerDeviceIds = mutableListOf<Int>()
-        val deviceIds = InputDevice.getDeviceIds()
-        deviceIds.forEach { deviceId ->
-            InputDevice.getDevice(deviceId).apply {
-
-                // Verify that the device has gamepad buttons, control sticks, or both.
-                if (sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD
-                    || sources and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK) {
-                    // This device is a game controller. Store its device ID.
-                    gameControllerDeviceIds
-                        .takeIf { !it.contains(deviceId) }
-                        ?.add(deviceId)
-                }
-            }
-        }
-        return gameControllerDeviceIds
-    }
 }
 
 
