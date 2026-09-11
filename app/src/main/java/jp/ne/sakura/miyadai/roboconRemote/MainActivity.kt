@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -21,6 +23,7 @@ import org.ros2.rcljava.publisher.Publisher
 import org.ros2.rcljava.subscription.Subscription
 import ros2can.msg.PWRManagerRX
 import ros2can.msg.PWRManagerTX
+import std_msgs.msg.UInt16
 import java.util.Timer
 import java.util.TimerTask
 
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
 
     lateinit var Switch : Switch
+    lateinit var limitcurent : EditText
     lateinit var speedseekBar: SeekBar
 
     lateinit var battery1_vol : TextView
@@ -51,7 +55,7 @@ class MainActivity : ComponentActivity() {
 
     var R1Status = false
     var L1Status = false
-
+    private var limit_current = 20.0f
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
@@ -65,6 +69,7 @@ class MainActivity : ComponentActivity() {
         joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
 
+        limitcurent = findViewById(R.id.max_current)
         Switch = findViewById(R.id.switch_power)
 
         battery1_vol = findViewById(R.id.battery1_vol)
@@ -73,9 +78,9 @@ class MainActivity : ComponentActivity() {
 
         speedseekBar = findViewById(R.id.speed_changer)
 
-        speedseekBar.min = 50
-        speedseekBar.max = 100
-        speedseekBar.progress = 75
+        speedseekBar.min = 10
+        speedseekBar.max = 500
+        speedseekBar.progress = 200
 
         send_timer = Timer()
         this.handler = Handler(mainLooper)
@@ -85,6 +90,7 @@ class MainActivity : ComponentActivity() {
 
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
             val msg = PWRManagerTX()
+            msg.currentLimit = limit_current
             if (isChecked) {
                 msg.priority = 0
                 msg.powerstatus = true
@@ -92,6 +98,15 @@ class MainActivity : ComponentActivity() {
             } else {
                 msg.powerstatus = false
                 Powerpublisher.publish(msg)
+            }
+        }
+
+        limitcurent.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                limit_current = limitcurent.text.toString().toInt().toFloat()
+                false
+            } else {
+                false // 次の処理にイベントを渡す場合はfalseを返す
             }
         }
 
@@ -130,42 +145,47 @@ class MainActivity : ComponentActivity() {
         executor.addNode(Node)
         setSendTimer()
     }
+
     private fun  PWR_RX(msg: PWRManagerRX)
     {
-        battery1_vol.text = msg.battery1Voltage.toString()
-        battery2_vol.text = msg.battery2Voltage.toString()
-        current_text.text = msg.current.toString()
+        battery1_vol.text = "%.2f".format(msg.battery1Voltage)
+        battery2_vol.text = "%.2f".format(msg.battery2Voltage)
+        current_text.text = "%.2f".format(msg.current)
     }
 
     private fun setSendTimer(){
         send_timer = Timer()
         send_timer.schedule(
             object : TimerTask() {
-                override fun run() {
+                override fun run() {6
+                    val speed = speedseekBar.progress/100.0
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
 
-                    linear.x = AXIS[0].toDouble()
-                    linear.y = AXIS[1].toDouble()
-                    linear.z = AXIS[2].toDouble()
-                    if (Switch.isChecked) {
-                        angular.z = 1.0
-                    } else{
-                        angular.z = 0.0
-                    }
+
+                    linear.x = (AXIS[0] + joyStickSurfaceView.getPosX)*speed
+                    linear.y = (AXIS[1] + joyStickSurfaceView.getPosY)*speed
+                    linear.z = (AXIS[2] + horizontalStickSurfaceview.getX)*speed
+                    angular.x = AXIS[3].toDouble()
+                    angular.y = AXIS[4].toDouble()
+                    angular.z = AXIS[5].toDouble()
 
                     msg.angular = angular
                     msg.linear = linear
+
                     JoyStickpublisher.publish(msg);
+
                 }
-            }, 100, 100
+            }, 100, 50
         )
         send_power = Timer()
         send_power.schedule(
             object : TimerTask() {
                 override fun run() {
                     val msg = PWRManagerTX()
+                    msg.currentLimit = limit_current
+                    msg.batteryLimit = 11
                     if (Switch.isChecked)
                     {
                         msg.priority = 0
@@ -232,21 +252,21 @@ class MainActivity : ComponentActivity() {
         AXIS[0] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
         AXIS[1] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
         AXIS[2] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
+        AXIS[3] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+        AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
+        AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
         speedseekBar.progress += speed.toInt()*5
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         var handled = true
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
-            if (event.repeatCount == 0) {
-                when (keyCode) {
-                    // Handle gamepad and D-pad button presses to navigate the ship
-                    KeyEvent.KEYCODE_BUTTON_R1 -> R1Status = false
-                    KeyEvent.KEYCODE_BUTTON_L1 -> L1Status = false
-
-                    else -> {
-                        handled = false
-                    }
+            when (keyCode) {
+                // Handle gamepad and D-pad button presses to navigate the ship
+                KeyEvent.KEYCODE_BUTTON_R1 -> speedseekBar.progress += 20
+                KeyEvent.KEYCODE_BUTTON_L1 -> speedseekBar.progress -= 20
+                else -> {
+                    handled = false
                 }
             }
             if (handled) {

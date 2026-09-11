@@ -7,57 +7,49 @@
     android:background="@color/white"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/text_seppuku"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="遠隔非常停止"
+        app:layout_constraintBottom_toBottomOf="@+id/switch_power"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <SeekBar
         android:id="@+id/speed_changer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
         android:thumb="@drawable/bar_thumb"
-        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toEndOf="@+id/text_speed" />
+        app:layout_constraintStart_toEndOf="@+id/text_speed"
+        app:layout_constraintTop_toBottomOf="@+id/max_current" />
 
     <TextView
         android:id="@+id/text_speed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="32dp"
-        android:text="speed"
-        app:layout_constraintBottom_toTopOf="@+id/JoySticksurfaceView"
-        app:layout_constraintStart_toStartOf="parent" />
-
-
-    <TextView
-        android:id="@+id/text_seppuku"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
-        android:text="Power Switch"
-        app:layout_constraintBottom_toBottomOf="@+id/switch_power"
+        android:layout_marginTop="32dp"
+        android:text="最大回転速度"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/switch_power" />
+        app:layout_constraintTop_toBottomOf="@+id/max_current" />
 
-    <TextView
-        android:id="@+id/text_seppuku2"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
-        android:text="Power Switch"
-        app:layout_constraintBottom_toBottomOf="@+id/switch_power"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/switch_power" />
 
     <Switch
         android:id="@+id/switch_power"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/swtich_track"
         android:showText="false"
         android:thumb="@drawable/switch_thumb"
         android:track="@drawable/swtich_track"
-        app:layout_constraintBottom_toTopOf="@+id/speed_changer"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toEndOf="@+id/text_seppuku"
         app:layout_constraintTop_toTopOf="parent" />
@@ -76,7 +68,7 @@
     <jp.ne.sakura.miyadai.roboconRemote.JoyStickSurfaceView
         android:id="@+id/JoySticksurfaceView"
         android:layout_width="0dp"
-        android:layout_height="150dp"
+        android:layout_height="120dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
@@ -97,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.3" />
+        app:layout_constraintGuide_percent="0.35" />
 
     <TextView
         android:id="@+id/battery1_vol_text"
@@ -123,7 +115,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="バッテリ2電圧"
         app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
         app:layout_constraintTop_toBottomOf="@+id/battery1_vol_text" />
@@ -142,7 +134,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:text="電流値"
         app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
         app:layout_constraintTop_toBottomOf="@+id/battery2_vol_text" />
@@ -156,5 +148,39 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/current_text"
         app:layout_constraintTop_toTopOf="@+id/current_text" />
+
+    <EditText
+        android:id="@+id/max_current"
+        android:layout_width="0dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        android:text="20"
+        app:layout_constraintEnd_toStartOf="@+id/current_A"
+        app:layout_constraintStart_toEndOf="@+id/max_current_text"
+        app:layout_constraintTop_toBottomOf="@+id/switch_power" />
+
+    <TextView
+        android:id="@+id/max_current_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:text="電流制限"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switch_power" />
+
+    <TextView
+        android:id="@+id/current_A"
+        android:layout_width="8dp"
+        android:layout_height="14dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:text="A"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/switch_power" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
