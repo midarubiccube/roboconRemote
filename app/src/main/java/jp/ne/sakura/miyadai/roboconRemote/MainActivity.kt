@@ -21,6 +21,8 @@ import org.ros2.rcljava.executors.SingleThreadedExecutor
 import org.ros2.rcljava.node.BaseComposableNode
 import org.ros2.rcljava.publisher.Publisher
 import org.ros2.rcljava.subscription.Subscription
+import ros2can.msg.BLDCRX
+import ros2can.msg.BLDCTX
 import ros2can.msg.PWRManagerRX
 import ros2can.msg.PWRManagerTX
 import std_msgs.msg.UInt16
@@ -31,31 +33,24 @@ import java.util.TimerTask
 class MainActivity : ComponentActivity() {
     lateinit var executor: Executor
     lateinit var send_timer: Timer
-    lateinit var send_power : Timer
     lateinit var timer : Timer
     lateinit var handler: Handler
 
     lateinit var Node : BaseComposableNode
 
     lateinit var JoyStickpublisher: Publisher<Twist>
+    lateinit var BLDCTXpublisher : Publisher<BLDCTX>
+    lateinit var BLDCRXSubscriber: Subscription<BLDCRX>
 
-    lateinit var Powerpublisher: Publisher<PWRManagerTX>
-    lateinit var PowerSubscriber: Subscription<PWRManagerRX>
-
-    lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
+    lateinit var rollerspeed : SeekBar
 
-    lateinit var Switch : Switch
-    lateinit var limitcurent : EditText
-    lateinit var speedseekBar: SeekBar
+    lateinit var rpm_text : TextView
+    lateinit var bldc_rx: TextView
 
-    lateinit var battery1_vol : TextView
-    lateinit var battery2_vol : TextView
-    lateinit var current_text : TextView
 
     var R1Status = false
     var L1Status = false
-    private var limit_current = 20.0f
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
@@ -66,49 +61,32 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        joyStickSurfaceView = findViewById(R.id.JoySticksurfaceView)
         horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
+        rpm_text = findViewById(R.id.RPM_text)
+        rollerspeed = findViewById(R.id.roller_speed)
+        bldc_rx = findViewById(R.id.bldc_rpm)
 
-        limitcurent = findViewById(R.id.max_current)
-        Switch = findViewById(R.id.switch_power)
+        rollerspeed.min = 0
+        rollerspeed.max = 7000
+        rollerspeed.progress = 0
 
-        battery1_vol = findViewById(R.id.battery1_vol)
-        battery2_vol = findViewById(R.id.battery2_vol)
-        current_text = findViewById(R.id.current)
-
-        speedseekBar = findViewById(R.id.speed_changer)
-
-        speedseekBar.min = 10
-        speedseekBar.max = 500
-        speedseekBar.progress = 200
+        rollerspeed.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                    rpm_text.text = "$p1 RPM"
+                }
+                override fun onStartTrackingTouch(p0: SeekBar?) {
+                }
+                override fun onStopTrackingTouch(p0: SeekBar?) {
+                }
+            }
+        )
 
         send_timer = Timer()
         this.handler = Handler(mainLooper)
         this.executor = this.createExecutor()
 
         initROS()
-
-        Switch.setOnCheckedChangeListener { buttonView, isChecked ->
-            val msg = PWRManagerTX()
-            msg.currentLimit = limit_current
-            if (isChecked) {
-                msg.priority = 0
-                msg.powerstatus = true
-                Powerpublisher.publish(msg)
-            } else {
-                msg.powerstatus = false
-                Powerpublisher.publish(msg)
-            }
-        }
-
-        limitcurent.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
-                limit_current = limitcurent.text.toString().toInt().toFloat()
-                false
-            } else {
-                false // 次の処理にイベントを渡す場合はfalseを返す
-            }
-        }
 
         timer = Timer()
         timer.schedule(
@@ -126,19 +104,19 @@ class MainActivity : ComponentActivity() {
         RCLJava.rclJavaInit()
         this.executor = this.createExecutor()
 
-        Node = BaseComposableNode("android_controller")//ノード名を設定
+        Node = BaseComposableNode("android_controller_roller")//ノード名を設定
 
         JoyStickpublisher = Node.node.createPublisher(
-            Twist::class.java, "/asi/cmd_vel" //Publisherを作成
+            Twist::class.java, "/roller/cmd_vel" //Publisherを作成
         )
 
-        Powerpublisher = Node.node.createPublisher(
-            PWRManagerTX::class.java, "PWRManager/TX" //Publisherを作成
+        BLDCTXpublisher = Node.node.createPublisher(
+            BLDCTX::class.java, "BLDC/TX" //Publisherを作成
         )
 
-        PowerSubscriber = Node.node.createSubscription(
-            PWRManagerRX::class.java,
-            "PWRManager/RX",
+        BLDCRXSubscriber = Node.node.createSubscription(
+            BLDCRX::class.java,
+            "/BLDC/RX",
             { msg -> PWR_RX(msg) }
         )
 
@@ -146,11 +124,12 @@ class MainActivity : ComponentActivity() {
         setSendTimer()
     }
 
-    private fun  PWR_RX(msg: PWRManagerRX)
+    private fun PWR_RX(msg : BLDCRX)
     {
-        battery1_vol.text = "%.2f".format(msg.battery1Voltage)
-        battery2_vol.text = "%.2f".format(msg.battery2Voltage)
-        current_text.text = "%.2f".format(msg.current)
+        if (msg.boardNum.toInt() == 5)
+        {
+            bldc_rx.text = "%.2fRPM".format(msg.rps*60.0f)
+        }
     }
 
     private fun setSendTimer(){
@@ -158,18 +137,20 @@ class MainActivity : ComponentActivity() {
         send_timer.schedule(
             object : TimerTask() {
                 override fun run() {6
-                    val speed = speedseekBar.progress/100.0
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
 
+                    val bldctx = BLDCTX()
+                    bldctx.priority = 0
+                    bldctx.boardNum = 5
+                    bldctx.gearRatio = 1f
+                    bldctx.encoderResolution = 4096
+                    bldctx.monitorFlag = true
+                    bldctx.monitorFreq = 100
 
-                    linear.x = (AXIS[0] + joyStickSurfaceView.getPosX)*speed
-                    linear.y = (AXIS[1] + joyStickSurfaceView.getPosY)*speed
-                    linear.z = (AXIS[2] + horizontalStickSurfaceview.getX)*speed
-                    angular.x = AXIS[3].toDouble()
-                    angular.y = AXIS[4].toDouble()
-                    angular.z = AXIS[5].toDouble()
+                    bldctx.rpsTarget = rollerspeed.progress/60.0f
+                    BLDCTXpublisher.publish(bldctx)
 
                     msg.angular = angular
                     msg.linear = linear
@@ -178,25 +159,6 @@ class MainActivity : ComponentActivity() {
 
                 }
             }, 100, 50
-        )
-        send_power = Timer()
-        send_power.schedule(
-            object : TimerTask() {
-                override fun run() {
-                    val msg = PWRManagerTX()
-                    msg.currentLimit = limit_current
-                    msg.batteryLimit = 11
-                    if (Switch.isChecked)
-                    {
-                        msg.priority = 0
-                        msg.powerstatus = true
-                    } else{
-                        msg.priority = 0
-                        msg.powerstatus = false
-                    }
-                    Powerpublisher.publish(msg)
-                }
-            }, 100, 500
         )
     }
 
@@ -255,7 +217,6 @@ class MainActivity : ComponentActivity() {
         AXIS[3] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
-        speedseekBar.progress += speed.toInt()*5
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -263,8 +224,8 @@ class MainActivity : ComponentActivity() {
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
             when (keyCode) {
                 // Handle gamepad and D-pad button presses to navigate the ship
-                KeyEvent.KEYCODE_BUTTON_R1 -> speedseekBar.progress += 20
-                KeyEvent.KEYCODE_BUTTON_L1 -> speedseekBar.progress -= 20
+                KeyEvent.KEYCODE_BUTTON_R1 -> rollerspeed.progress += 20
+                KeyEvent.KEYCODE_BUTTON_L1 -> rollerspeed.progress -= 20
                 else -> {
                     handled = false
                 }
@@ -314,11 +275,9 @@ class MainActivity : ComponentActivity() {
         val msg = PWRManagerTX()
         msg.priority = 0
         msg.powerstatus = false
-        Powerpublisher.publish(msg)
 
         send_timer.cancel()
         timer.cancel()
-        send_power.cancel()
         Log.d("stop", "stop")
     }
 
@@ -326,7 +285,6 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         timer.cancel()
         send_timer.cancel()
-        send_power.cancel()
         Log.d("stop", "stop")
     }
 
