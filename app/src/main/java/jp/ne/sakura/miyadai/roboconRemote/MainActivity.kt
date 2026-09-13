@@ -21,6 +21,8 @@ import org.ros2.rcljava.executors.SingleThreadedExecutor
 import org.ros2.rcljava.node.BaseComposableNode
 import org.ros2.rcljava.publisher.Publisher
 import org.ros2.rcljava.subscription.Subscription
+import ros2can.msg.BLDCRX
+import ros2can.msg.BLDCTX
 import ros2can.msg.PWRManagerRX
 import ros2can.msg.PWRManagerTX
 import std_msgs.msg.UInt16
@@ -37,10 +39,13 @@ class MainActivity : ComponentActivity() {
 
     lateinit var Node : BaseComposableNode
 
-    lateinit var JoyStickpublisher: Publisher<Twist>
+    lateinit var JoyStickpublisher : Publisher<Twist>
 
-    lateinit var Powerpublisher: Publisher<PWRManagerTX>
-    lateinit var PowerSubscriber: Subscription<PWRManagerRX>
+    lateinit var Powerpublisher : Publisher<PWRManagerTX>
+    lateinit var PowerSubscriber : Subscription<PWRManagerRX>
+
+    lateinit var BLDCpublisher : Publisher<BLDCTX>
+    lateinit var BLDCSubscriber : Subscription<BLDCRX>
 
     lateinit var joyStickSurfaceView: JoyStickSurfaceView
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
@@ -79,7 +84,7 @@ class MainActivity : ComponentActivity() {
         speedseekBar = findViewById(R.id.speed_changer)
 
         speedseekBar.min = 10
-        speedseekBar.max = 500
+        speedseekBar.max = 300
         speedseekBar.progress = 200
 
         send_timer = Timer()
@@ -90,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
         Switch.setOnCheckedChangeListener { buttonView, isChecked ->
             val msg = PWRManagerTX()
+            msg.priority = 0
             msg.currentLimit = limit_current
             if (isChecked) {
                 msg.priority = 0
@@ -133,13 +139,23 @@ class MainActivity : ComponentActivity() {
         )
 
         Powerpublisher = Node.node.createPublisher(
-            PWRManagerTX::class.java, "PWRManager/TX" //Publisherを作成
+            PWRManagerTX::class.java, "/PWRManager/TX" //Publisherを作成
         )
 
         PowerSubscriber = Node.node.createSubscription(
             PWRManagerRX::class.java,
             "PWRManager/RX",
             { msg -> PWR_RX(msg) }
+        )
+
+        BLDCpublisher = Node.node.createPublisher(
+            BLDCTX::class.java, "/BLDC/TX"
+        )
+
+        BLDCSubscriber = Node.node.createSubscription(
+            BLDCRX::class.java,
+            "/BLDC/RX",
+            { msg -> BLDC_RX(msg) }
         )
 
         executor.addNode(Node)
@@ -153,29 +169,41 @@ class MainActivity : ComponentActivity() {
         current_text.text = "%.2f".format(msg.current)
     }
 
+    private fun BLDC_RX(msg: BLDCRX)
+    {
+
+    }
+
     private fun setSendTimer(){
         send_timer = Timer()
         send_timer.schedule(
             object : TimerTask() {
                 override fun run() {6
-                    val speed = speedseekBar.progress/100.0
+                    val speed = speedseekBar.progress / 100.0
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
 
-
-                    linear.x = (AXIS[0] + joyStickSurfaceView.getPosX)*speed
-                    linear.y = (AXIS[1] + joyStickSurfaceView.getPosY)*speed
-                    linear.z = (AXIS[2] + horizontalStickSurfaceview.getX)*speed
+                    linear.x = (AXIS[0] + joyStickSurfaceView.getPosX) * speed
+                    linear.y = (AXIS[1] + joyStickSurfaceView.getPosY) * speed
+                    linear.z = (AXIS[2] + horizontalStickSurfaceview.getX) * speed
                     angular.x = AXIS[3].toDouble()
                     angular.y = AXIS[4].toDouble()
                     angular.z = AXIS[5].toDouble()
 
                     msg.angular = angular
                     msg.linear = linear
-
                     JoyStickpublisher.publish(msg);
 
+                    val bldc = BLDCTX()
+                    bldc.boardNum = 4;
+                    bldc.encoderResolution = 4096
+                    bldc.gearRatio = 19.2f
+                    bldc.monitorFlag = true
+                    bldc.monitorFreq = 100
+
+                    bldc.rpsTarget = AXIS[7] * 50.0f
+                    BLDCpublisher.publish(bldc)
                 }
             }, 100, 50
         )
@@ -185,7 +213,7 @@ class MainActivity : ComponentActivity() {
                 override fun run() {
                     val msg = PWRManagerTX()
                     msg.currentLimit = limit_current
-                    msg.batteryLimit = 11
+                    msg.batteryLimit = 11.1f
                     if (Switch.isChecked)
                     {
                         msg.priority = 0
@@ -255,6 +283,9 @@ class MainActivity : ComponentActivity() {
         AXIS[3] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
+        AXIS[6] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+
         speedseekBar.progress += speed.toInt()*5
     }
 
@@ -282,8 +313,20 @@ class MainActivity : ComponentActivity() {
             if (event.repeatCount == 0) {
                 when (keyCode) {
                     // Handle gamepad and D-pad button presses to navigate the ship
-                    KeyEvent.KEYCODE_BUTTON_R1 -> R1Status = true
-                    KeyEvent.KEYCODE_BUTTON_L1 -> L1Status = true
+                    KeyEvent.KEYCODE_BUTTON_X -> {
+                        val msg = PWRManagerTX()
+                        msg.currentLimit = limit_current
+                        msg.priority = 0
+                        if (Switch.isChecked)
+                        {
+                            Switch.isChecked = false
+                            msg.powerstatus = false
+                        } else {
+                            Switch.isChecked = true
+                            msg.powerstatus = true
+                        }
+                        Powerpublisher.publish(msg)
+                    }
                     else -> {
                         handled = false
                     }
