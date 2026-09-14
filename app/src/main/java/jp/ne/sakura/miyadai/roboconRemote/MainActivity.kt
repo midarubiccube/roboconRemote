@@ -7,10 +7,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.SeekBar
-import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import geometry_msgs.msg.Twist
@@ -23,9 +20,8 @@ import org.ros2.rcljava.publisher.Publisher
 import org.ros2.rcljava.subscription.Subscription
 import ros2can.msg.BLDCRX
 import ros2can.msg.BLDCTX
-import ros2can.msg.PWRManagerRX
-import ros2can.msg.PWRManagerTX
-import std_msgs.msg.UInt16
+import ros2can.msg.MotorBoardTX
+import ros2can.msg.ServoTX
 import java.util.Timer
 import java.util.TimerTask
 
@@ -39,8 +35,13 @@ class MainActivity : ComponentActivity() {
     lateinit var Node : BaseComposableNode
 
     lateinit var JoyStickpublisher: Publisher<Twist>
+
     lateinit var BLDCTXpublisher : Publisher<BLDCTX>
     lateinit var BLDCRXSubscriber: Subscription<BLDCRX>
+
+    lateinit var MotorTXpublisher : Publisher<MotorBoardTX>
+
+    lateinit var ServoTXpublisher : Publisher<ServoTX>
 
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var rollerspeed : SeekBar
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
+    private var kaiten_position : Int = 0
 
     var AXIS = FloatArray(8)
 
@@ -120,6 +122,14 @@ class MainActivity : ComponentActivity() {
             { msg -> PWR_RX(msg) }
         )
 
+        MotorTXpublisher = Node.node.createPublisher(
+            MotorBoardTX::class.java, "/MotorBoard/TX"
+        )
+
+        ServoTXpublisher = Node.node.createPublisher(
+            ServoTX::class.java, "/Servo/TX"
+        )
+
         executor.addNode(Node)
         setSendTimer()
     }
@@ -151,14 +161,26 @@ class MainActivity : ComponentActivity() {
 
                     bldctx.rpsTarget = rollerspeed.progress/60.0f
                     BLDCTXpublisher.publish(bldctx)
+                    bldctx.boardNum = 6
+                    BLDCTXpublisher.publish(bldctx)
 
-                    msg.angular = angular
-                    msg.linear = linear
+                    val motormsg = MotorBoardTX()
+                    motormsg.boardNum = 0
+                    motormsg.mode[0] = 1
+                    motormsg.target[0] = 100
 
-                    JoyStickpublisher.publish(msg);
+                    val servo = ServoTX()
+                    servo.boardNum = 0
+                    servo.channnel = 0
 
+                    kaiten_position += (AXIS[0]*50.0).toInt()
+
+                    servo.position[0] = kaiten_position.toShort()
+                    servo.time[0] = 0
+                    servo.speed[0] = 20
+                    ServoTXpublisher.publish(servo)
                 }
-            }, 100, 50
+            }, 100, 100
         )
     }
 
@@ -209,14 +231,14 @@ class MainActivity : ComponentActivity() {
     private fun processJoystickInput(event: MotionEvent, historyPos: Int) {
  
         val inputDevice = event.device
-        val speed = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-
         AXIS[0] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
         AXIS[1] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
         AXIS[2] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
         AXIS[3] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
+        AXIS[6] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -271,10 +293,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-
-        val msg = PWRManagerTX()
-        msg.priority = 0
-        msg.powerstatus = false
 
         send_timer.cancel()
         timer.cancel()
