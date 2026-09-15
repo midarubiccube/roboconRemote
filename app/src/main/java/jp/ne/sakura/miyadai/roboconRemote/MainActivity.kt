@@ -199,13 +199,13 @@ class MainActivity : ComponentActivity() {
                     bldc.boardNum = 4;
                     bldc.encoderResolution = 4096
                     bldc.gearRatio = 19.2f
-                    bldc.monitorFlag = true
-                    bldc.monitorFreq = 100
+                    bldc.monitorFlag = false
+                    bldc.monitorFreq = 0
 
-                    bldc.rpsTarget = AXIS[7] * 50.0f
+                    bldc.rpsTarget = AXIS[7] * 1.5f
                     BLDCpublisher.publish(bldc)
                 }
-            }, 100, 50
+            }, 100, 100
         )
         send_power = Timer()
         send_power.schedule(
@@ -284,7 +284,7 @@ class MainActivity : ComponentActivity() {
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
         AXIS[6] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
 
         speedseekBar.progress += speed.toInt()*5
     }
