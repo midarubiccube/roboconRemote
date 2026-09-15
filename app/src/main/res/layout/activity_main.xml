@@ -33,64 +33,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.2" />
 
-    <TextView
-        android:id="@+id/battery1_vol_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:text="バッテリ1電圧"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/battery1_vol"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/battery1_vol_text"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/battery2_vol_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:text="バッテリ2電圧"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/battery1_vol_text" />
-
-    <TextView
-        android:id="@+id/battery2_vol"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/battery2_vol_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/battery2_vol_text"
-        app:layout_constraintTop_toTopOf="@+id/battery2_vol_text" />
-
-    <TextView
-        android:id="@+id/current_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:text="電流値"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/battery2_vol_text" />
-
-    <TextView
-        android:id="@+id/current"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toBottomOf="@+id/current_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/current_text"
-        app:layout_constraintTop_toTopOf="@+id/current_text" />
-
     <com.longdo.mjpegviewer.MjpegView
         android:id="@+id/mjpegview"
         android:layout_width="0dp"
@@ -109,16 +51,26 @@
         android:layout_marginTop="32dp"
         android:text="0RPM"
         app:layout_constraintEnd_toStartOf="@+id/roller_speed"
-        app:layout_constraintTop_toBottomOf="@+id/text_speed" />
+        app:layout_constraintTop_toBottomOf="@+id/text_roller" />
 
     <TextView
-        android:id="@+id/text_speed"
+        android:id="@+id/text_roller"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="28dp"
         android:text="ローラ"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_roller2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="ブラシ"
+        app:layout_constraintEnd_toStartOf="@+id/switch_brush"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
     <SeekBar
@@ -129,7 +81,7 @@
         android:thumb="@drawable/bar_thumb"
         app:layout_constraintDimensionRatio="2:1"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/text_speed" />
+        app:layout_constraintTop_toBottomOf="@+id/text_roller" />
 
     <TextView
         android:id="@+id/RPM_text"
@@ -139,7 +91,7 @@
         android:text="0RPM"
         app:layout_constraintEnd_toStartOf="@+id/bldc_rpm"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_speed" />
+        app:layout_constraintTop_toBottomOf="@+id/text_roller" />
 
     <Switch
         android:id="@+id/switch_roller"
@@ -151,7 +103,20 @@
         android:thumb="@drawable/switch_thumb"
         android:track="@drawable/swtich_track"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintStart_toEndOf="@+id/text_speed"
+        app:layout_constraintStart_toEndOf="@+id/text_roller"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/switch_brush"
+        android:layout_width="68dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/swtich_track"
+        android:showText="false"
+        android:thumb="@drawable/switch_thumb"
+        android:track="@drawable/swtich_track"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

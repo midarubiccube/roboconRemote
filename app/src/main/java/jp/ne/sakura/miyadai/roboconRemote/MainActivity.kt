@@ -46,7 +46,9 @@ class MainActivity : ComponentActivity() {
 
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var rollerspeed : SeekBar
+
     lateinit var rollerSwitch : Switch
+    lateinit var brashSwitch : Switch
 
     lateinit var rpm_text : TextView
     lateinit var bldc_rx: TextView
@@ -70,6 +72,7 @@ class MainActivity : ComponentActivity() {
         rollerspeed = findViewById(R.id.roller_speed)
         bldc_rx = findViewById(R.id.bldc_rpm)
         rollerSwitch = findViewById(R.id.switch_roller)
+        brashSwitch = findViewById(R.id.switch_brush)
 
         rollerspeed.min = 3000
         rollerspeed.max = 7000
@@ -172,20 +175,24 @@ class MainActivity : ComponentActivity() {
                     }
                     BLDCTXpublisher.publish(bldctx)
                     bldctx.boardNum = 6
+                    bldctx.monitorFlag = false
+                    bldctx.monitorFreq = 0
                     BLDCTXpublisher.publish(bldctx)
 
                     val motormsg = MotorBoardTX()
                     motormsg.boardNum = 0
                     motormsg.mode[0] = 1
-                    motormsg.target[0] = 100
+                    motormsg.target[0] = if (brashSwitch.isChecked) 100 else 0
+                    MotorTXpublisher.publish(motormsg)
 
                     val servo = ServoTX()
                     servo.boardNum = 0
                     servo.channnel = 0
 
-                    //kaiten_position += (AXIS[0]*50.0).toInt().toShort()
+                    kaiten_position =
+                        (kaiten_position + (AXIS[0] * 50.0).toInt()).toShort()
 
-                    servo.position[0] = kaiten_position.toShort()
+                    servo.position[0] = kaiten_position
                     servo.time[0] = 0
                     servo.speed[0] = 20
                     ServoTXpublisher.publish(servo)
@@ -286,6 +293,15 @@ class MainActivity : ComponentActivity() {
                         } else {
                             rollerSwitch.isChecked = true
                             rpm_text.text = "${rollerspeed.progress} RPM"
+                        }
+                    }
+
+                    KeyEvent.KEYCODE_BUTTON_X -> {
+                        if (brashSwitch.isChecked)
+                        {
+                            brashSwitch.isChecked = false
+                        } else {
+                            brashSwitch.isChecked = true
                         }
                     }
                     else -> {
