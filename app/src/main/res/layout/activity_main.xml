@@ -8,29 +8,6 @@
     android:orientation="vertical">
 
 
-    <TextView
-        android:id="@+id/text_speed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:text="ローラ回転速度"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <SeekBar
-        android:id="@+id/roller_speed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:thumb="@drawable/bar_thumb"
-        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/text_speed"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
         android:id="@+id/horizontalStickSurfaceview"
         android:layout_width="200dp"
@@ -47,14 +24,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75" />
+        app:layout_constraintGuide_percent="0.8" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_before_guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.23" />
+        app:layout_constraintGuide_percent="0.2" />
 
     <TextView
         android:id="@+id/battery1_vol_text"
@@ -126,6 +103,35 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
+        android:id="@+id/bldc_rpm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="0RPM"
+        app:layout_constraintEnd_toStartOf="@+id/roller_speed"
+        app:layout_constraintTop_toBottomOf="@+id/text_speed" />
+
+    <TextView
+        android:id="@+id/text_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="28dp"
+        android:text="ローラ"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <SeekBar
+        android:id="@+id/roller_speed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:thumb="@drawable/bar_thumb"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/text_speed" />
+
+    <TextView
         android:id="@+id/RPM_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -135,14 +141,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_speed" />
 
-    <TextView
-        android:id="@+id/bldc_rpm"
-        android:layout_width="wrap_content"
+    <Switch
+        android:id="@+id/switch_roller"
+        android:layout_width="68dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="8dp"
-        android:text="0RPM"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/swtich_track"
+        android:showText="false"
+        android:thumb="@drawable/switch_thumb"
+        android:track="@drawable/swtich_track"
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/roller_speed" />
+        app:layout_constraintStart_toEndOf="@+id/text_speed"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

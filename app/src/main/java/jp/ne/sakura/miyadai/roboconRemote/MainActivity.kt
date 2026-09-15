@@ -8,6 +8,7 @@ import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import geometry_msgs.msg.Twist
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
     lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var rollerspeed : SeekBar
+    lateinit var rollerSwitch : Switch
 
     lateinit var rpm_text : TextView
     lateinit var bldc_rx: TextView
@@ -55,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
-    private var kaiten_position : Int = 0
+    private var kaiten_position : Short = 0
 
     var AXIS = FloatArray(8)
 
@@ -67,15 +69,20 @@ class MainActivity : ComponentActivity() {
         rpm_text = findViewById(R.id.RPM_text)
         rollerspeed = findViewById(R.id.roller_speed)
         bldc_rx = findViewById(R.id.bldc_rpm)
+        rollerSwitch = findViewById(R.id.switch_roller)
 
-        rollerspeed.min = 0
+        rollerspeed.min = 3000
         rollerspeed.max = 7000
-        rollerspeed.progress = 0
+        rollerspeed.progress = 3000
 
         rollerspeed.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                    rpm_text.text = "$p1 RPM"
+                    if (rollerSwitch.isChecked) {
+                        rpm_text.text = "$p1 RPM"
+                    } else {
+                        rpm_text.text = "0 RPM"
+                    }
                 }
                 override fun onStartTrackingTouch(p0: SeekBar?) {
                 }
@@ -158,8 +165,11 @@ class MainActivity : ComponentActivity() {
                     bldctx.encoderResolution = 4096
                     bldctx.monitorFlag = true
                     bldctx.monitorFreq = 100
-
-                    bldctx.rpsTarget = rollerspeed.progress/60.0f
+                    if (rollerSwitch.isChecked){
+                        bldctx.rpsTarget = rollerspeed.progress/60.0f
+                    } else {
+                        bldctx.rpsTarget = 0.0f
+                    }
                     BLDCTXpublisher.publish(bldctx)
                     bldctx.boardNum = 6
                     BLDCTXpublisher.publish(bldctx)
@@ -173,7 +183,7 @@ class MainActivity : ComponentActivity() {
                     servo.boardNum = 0
                     servo.channnel = 0
 
-                    kaiten_position += (AXIS[0]*50.0).toInt()
+                    //kaiten_position += (AXIS[0]*50.0).toInt().toShort()
 
                     servo.position[0] = kaiten_position.toShort()
                     servo.time[0] = 0
@@ -246,8 +256,8 @@ class MainActivity : ComponentActivity() {
         if (event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
             when (keyCode) {
                 // Handle gamepad and D-pad button presses to navigate the ship
-                KeyEvent.KEYCODE_BUTTON_R1 -> rollerspeed.progress += 20
-                KeyEvent.KEYCODE_BUTTON_L1 -> rollerspeed.progress -= 20
+                KeyEvent.KEYCODE_BUTTON_R1 -> rollerspeed.progress += 250
+                KeyEvent.KEYCODE_BUTTON_L1 -> rollerspeed.progress -= 250
                 else -> {
                     handled = false
                 }
@@ -267,6 +277,17 @@ class MainActivity : ComponentActivity() {
                     // Handle gamepad and D-pad button presses to navigate the ship
                     KeyEvent.KEYCODE_BUTTON_R1 -> R1Status = true
                     KeyEvent.KEYCODE_BUTTON_L1 -> L1Status = true
+                    KeyEvent.KEYCODE_BUTTON_A -> {
+                        if (rollerSwitch.isChecked)
+                        {
+                            rollerSwitch.isChecked = false
+                            rpm_text.text = "0 RPM"
+
+                        } else {
+                            rollerSwitch.isChecked = true
+                            rpm_text.text = "${rollerspeed.progress} RPM"
+                        }
+                    }
                     else -> {
                         handled = false
                     }
