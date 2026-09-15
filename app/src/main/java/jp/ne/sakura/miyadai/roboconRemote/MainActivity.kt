@@ -177,6 +177,7 @@ class MainActivity : ComponentActivity() {
                     bldctx.boardNum = 6
                     bldctx.monitorFlag = false
                     bldctx.monitorFreq = 0
+                    bldctx.rpsTarget = bldctx.rpsTarget*-1
                     BLDCTXpublisher.publish(bldctx)
 
                     val motormsg = MotorBoardTX()
