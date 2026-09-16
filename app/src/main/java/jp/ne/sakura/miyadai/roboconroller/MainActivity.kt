@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
     lateinit var rollerSwitch : Switch
     lateinit var brashSwitch : Switch
+    lateinit var resetButton: Button
 
     lateinit var rpm_text : TextView
     lateinit var bldc_rx: TextView
@@ -59,7 +61,11 @@ class MainActivity : ComponentActivity() {
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
+
     private var kaiten_position : Short = 0
+    private var updown_position : Short = 0
+    private var kakudo_position : Short = 300
+
 
     var AXIS = FloatArray(8)
 
@@ -73,10 +79,18 @@ class MainActivity : ComponentActivity() {
         bldc_rx = findViewById(R.id.bldc_rpm)
         rollerSwitch = findViewById(R.id.switch_roller)
         brashSwitch = findViewById(R.id.switch_brush)
-
+        resetButton = findViewById(R.id.resetbutton)
         rollerspeed.min = 3000
-        rollerspeed.max = 7000
+        rollerspeed.max = 8000
         rollerspeed.progress = 3000
+
+        resetButton.setOnClickListener(
+            {
+                kaiten_position = 0
+                updown_position = 0
+                kakudo_position = 300
+            }
+        )
 
         rollerspeed.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
@@ -156,7 +170,7 @@ class MainActivity : ComponentActivity() {
         send_timer = Timer()
         send_timer.schedule(
             object : TimerTask() {
-                override fun run() {6
+                override fun run() {
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
@@ -177,6 +191,7 @@ class MainActivity : ComponentActivity() {
                     bldctx.boardNum = 6
                     bldctx.monitorFlag = false
                     bldctx.monitorFreq = 0
+                    bldctx.rpsTarget = bldctx.rpsTarget*-1
                     BLDCTXpublisher.publish(bldctx)
 
                     val motormsg = MotorBoardTX()
@@ -188,16 +203,28 @@ class MainActivity : ComponentActivity() {
                     val servo = ServoTX()
                     servo.boardNum = 0
                     servo.channnel = 0
-
-                    kaiten_position =
-                        (kaiten_position + (AXIS[0] * 50.0).toInt()).toShort()
-
+                    kaiten_position = (kaiten_position + (AXIS[0] * -200.0).toInt()).toShort()
                     servo.position[0] = kaiten_position
                     servo.time[0] = 0
                     servo.speed[0] = 20
+
+                    updown_position = (updown_position + (AXIS[3] * -200.0).toInt()).toShort()
+                    servo.position[1] = updown_position
+                    servo.time[1] = 0
+                    servo.speed[1 ] = 20
+
+                    if (kakudo_position >=  300) {
+                        kakudo_position = (kakudo_position + (AXIS[7] * -10.0).toInt()).toShort()
+                    } else {
+                        kakudo_position = 300
+                    }
+                    servo.position[2] = kakudo_position
+                    servo.time[2] = 0
+                    servo.speed[2] = 20
+                    servo.monitorFreq = if (brashSwitch.isChecked) 200 else 0
                     ServoTXpublisher.publish(servo)
                 }
-            }, 100, 100
+            }, 100, 200
         )
     }
 
@@ -255,7 +282,7 @@ class MainActivity : ComponentActivity() {
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
         AXIS[6] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
