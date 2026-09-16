@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconRemote
+package jp.ne.sakura.miyadai.roboconroller
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

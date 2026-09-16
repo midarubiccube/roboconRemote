@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconRemote.ui.theme
+package jp.ne.sakura.miyadai.roboconroller.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

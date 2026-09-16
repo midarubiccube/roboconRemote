@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "jp.ne.sakura.miyadai.roboconRemote"
+    namespace = "jp.ne.sakura.miyadai.roboconroller"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "jp.ne.sakura.miyadai.roboconRemote"
+        applicationId = "jp.ne.sakura.miyadai.roboconroller"
         minSdk = 26
         targetSdk = 33
         versionCode = 1
