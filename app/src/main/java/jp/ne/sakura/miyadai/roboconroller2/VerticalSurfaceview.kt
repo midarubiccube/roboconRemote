@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconroller
+package jp.ne.sakura.miyadai.roboconroller2
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -15,20 +15,20 @@ import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.ViewGroup
-
-class StickSurfaceview(context: Context, attrs: AttributeSet?) :
+class VerticalSurfaceview(context: Context, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback{
 
     private lateinit var params : ViewGroup.LayoutParams
     private lateinit var background: Bitmap
     private lateinit var stick: Bitmap
 
-    private var X : Float = 0f
+    private var postionY : Float = 0f
 
     private var alphaBacksPaint : Paint
     private var alphaStickPaint : Paint
 
     private var isTouched = false
+    private var islocked = false
 
     private lateinit var surfaceHolder : SurfaceHolder
     private val ALPHA_PAD_DEFAULT = 150
@@ -42,8 +42,18 @@ class StickSurfaceview(context: Context, attrs: AttributeSet?) :
             alphaBacksPaint.alpha = alpha
         }
 
-    val sendX : Float
-        get() = if (isTouched) (X - width  / 2) / (params.width - params.height) * 2 else 0f
+    val getY : Float
+        get() = if (isTouched || islocked) (postionY - height  / 2) / (params.height - params.width) * 2 else 0f
+
+    fun sety(x : Float)
+    {
+        islocked = true
+        postionY = (x * (params.height - params.width)/2) + height/2
+        val canvas = surfaceHolder.lockCanvas()
+        drawBackground(canvas)
+        drawStick(canvas)
+        surfaceHolder.unlockCanvasAndPost(canvas)
+    }
 
     init {
         val res = context.resources
@@ -57,8 +67,8 @@ class StickSurfaceview(context: Context, attrs: AttributeSet?) :
     private fun loadImages(
         res: Resources,
     ) {
-        background = BitmapFactory.decodeResource(res, R.drawable.hojoystick)
-        stick = BitmapFactory.decodeResource(res, R.drawable.h_joystick_stick)
+        background = BitmapFactory.decodeResource(res, R.drawable.vojoystick)
+        stick = BitmapFactory.decodeResource(res, R.drawable.vjoystick_stick)
     }
 
     private fun initHolder() {
@@ -78,10 +88,10 @@ class StickSurfaceview(context: Context, attrs: AttributeSet?) :
     override fun surfaceCreated(surfaceholder: SurfaceHolder) {
         layoutAlpha = ALPHA_PAD_DEFAULT
         params = ViewGroup.LayoutParams(width, height)
-        X = (params.width  / 2).toFloat()
+        postionY = (params.height  / 2).toFloat()
 
         background =  Bitmap.createScaledBitmap(background, params.width, params.height, false)
-        stick =  Bitmap.createScaledBitmap(stick, params.height, params.height, false)
+        stick =  Bitmap.createScaledBitmap(stick, params.width, params.width, false)
 
         val canvas = surfaceHolder.lockCanvas()
         drawBackground(canvas)
@@ -91,7 +101,7 @@ class StickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas) {
-        canvas.drawBitmap(stick,  X - params.height /2 , 0f, alphaStickPaint)
+        canvas.drawBitmap(stick,  0f, postionY - params.width /2 , alphaStickPaint)
     }
 
     override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
@@ -111,14 +121,20 @@ class StickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            isTouched = true
-            if (event.x < params.width - params.height / 2 && event.x - params.height / 2 > 0){
-                X  = event.x
+        if (event.action == MotionEvent.ACTION_UP) {
+            isTouched = false
+            postionY  = (params.height  / 2).toFloat()
+        } else {
+            if (event.y > params.height - params.width / 2) {
+                postionY = params.height - params.width / 2.0f
+            } else if (event.y - params.width / 2 < 0) {
+                postionY = params.width / 2.0f
+            } else {
+                postionY = event.y
             }
-        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
-            if (event.x < params.width - params.height / 2 &&  event.x - params.height / 2 > 0){
-                X  = event.x
+
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                isTouched = true
             }
         }
         drawStick(canvas)

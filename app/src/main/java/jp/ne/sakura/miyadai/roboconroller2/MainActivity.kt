@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconroller
+package jp.ne.sakura.miyadai.roboconroller2
 
 import android.os.Bundle
 import android.os.Handler
