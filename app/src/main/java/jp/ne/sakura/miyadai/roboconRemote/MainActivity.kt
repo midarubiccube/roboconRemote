@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
     var L1Status = false
     private var limit_current = 20.0f
 
-    private val SPINNER_PERIOD_MS : Long = 200
+    private val SPINNER_PERIOD_MS : Long = 400
     private val SPINNER_DELAY : Long  = 0
 
     var AXIS = FloatArray(8)
@@ -100,6 +100,7 @@ class MainActivity : ComponentActivity() {
             if (isChecked) {
                 msg.priority = 0
                 msg.powerstatus = true
+                speedseekBar.progress = 200
                 Powerpublisher.publish(msg)
             } else {
                 msg.powerstatus = false
@@ -322,6 +323,7 @@ class MainActivity : ComponentActivity() {
                             Switch.isChecked = false
                             msg.powerstatus = false
                         } else {
+                            speedseekBar.progress = 200
                             Switch.isChecked = true
                             msg.powerstatus = true
                         }
