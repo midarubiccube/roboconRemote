@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.SeekBar
@@ -84,7 +85,7 @@ class MainActivity : ComponentActivity() {
         speedseekBar = findViewById(R.id.speed_changer)
 
         speedseekBar.min = 10
-        speedseekBar.max = 300
+        speedseekBar.max = 400
         speedseekBar.progress = 200
 
         send_timer = Timer()
@@ -111,6 +112,7 @@ class MainActivity : ComponentActivity() {
         limitcurent.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
                 limit_current = limitcurent.text.toString().toInt().toFloat()
+                limitcurent.clearFocus()
                 false
             } else {
                 false // 次の処理にイベントを渡す場合はfalseを返す
