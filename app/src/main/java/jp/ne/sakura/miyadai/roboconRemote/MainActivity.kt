@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
     private var kaiten_position : Short = 0
     private var updown_position : Short = 0
-    private var kakudo_position : Short = 0
+    private var kakudo_position : Short = 300
 
 
     var AXIS = FloatArray(8)
@@ -81,14 +81,14 @@ class MainActivity : ComponentActivity() {
         brashSwitch = findViewById(R.id.switch_brush)
         resetButton = findViewById(R.id.resetbutton)
         rollerspeed.min = 3000
-        rollerspeed.max = 7000
+        rollerspeed.max = 8000
         rollerspeed.progress = 3000
 
         resetButton.setOnClickListener(
             {
                 kaiten_position = 0
                 updown_position = 0
-                kakudo_position = 0
+                kakudo_position = 300
             }
         )
 
@@ -170,7 +170,7 @@ class MainActivity : ComponentActivity() {
         send_timer = Timer()
         send_timer.schedule(
             object : TimerTask() {
-                override fun run() {6
+                override fun run() {
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
@@ -213,10 +213,10 @@ class MainActivity : ComponentActivity() {
                     servo.time[1] = 0
                     servo.speed[1 ] = 20
 
-                    if (kakudo_position >=  0) {
+                    if (kakudo_position >=  300) {
                         kakudo_position = (kakudo_position + (AXIS[7] * -10.0).toInt()).toShort()
                     } else {
-                        kakudo_position = 0
+                        kakudo_position = 300
                     }
                     servo.position[2] = kakudo_position
                     servo.time[2] = 0
