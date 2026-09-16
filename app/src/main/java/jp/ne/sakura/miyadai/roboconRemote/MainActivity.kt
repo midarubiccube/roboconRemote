@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
     lateinit var rollerSwitch : Switch
     lateinit var brashSwitch : Switch
+    lateinit var resetButton: Button
 
     lateinit var rpm_text : TextView
     lateinit var bldc_rx: TextView
@@ -77,10 +79,18 @@ class MainActivity : ComponentActivity() {
         bldc_rx = findViewById(R.id.bldc_rpm)
         rollerSwitch = findViewById(R.id.switch_roller)
         brashSwitch = findViewById(R.id.switch_brush)
-
+        resetButton = findViewById(R.id.resetbutton)
         rollerspeed.min = 3000
         rollerspeed.max = 7000
         rollerspeed.progress = 3000
+
+        resetButton.setOnClickListener(
+            {
+                kaiten_position = 0
+                updown_position = 0
+                kakudo_position = 0
+            }
+        )
 
         rollerspeed.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
@@ -193,24 +203,28 @@ class MainActivity : ComponentActivity() {
                     val servo = ServoTX()
                     servo.boardNum = 0
                     servo.channnel = 0
-                    kaiten_position = (kaiten_position + (AXIS[0] * -30.0).toInt()).toShort()
+                    kaiten_position = (kaiten_position + (AXIS[0] * -200.0).toInt()).toShort()
                     servo.position[0] = kaiten_position
                     servo.time[0] = 0
                     servo.speed[0] = 20
 
-                    updown_position = (updown_position + (AXIS[3] * -70.0).toInt()).toShort()
+                    updown_position = (updown_position + (AXIS[3] * -200.0).toInt()).toShort()
                     servo.position[1] = updown_position
                     servo.time[1] = 0
                     servo.speed[1 ] = 20
 
-                    kakudo_position = (kakudo_position + (AXIS[7] * -100.0).toInt()).toShort()
+                    if (kakudo_position >=  0) {
+                        kakudo_position = (kakudo_position + (AXIS[7] * -10.0).toInt()).toShort()
+                    } else {
+                        kakudo_position = 0
+                    }
                     servo.position[2] = kakudo_position
                     servo.time[2] = 0
                     servo.speed[2] = 20
                     servo.monitorFreq = if (brashSwitch.isChecked) 200 else 0
                     ServoTXpublisher.publish(servo)
                 }
-            }, 100, 100
+            }, 100, 200
         )
     }
 

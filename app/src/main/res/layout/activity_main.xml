@@ -119,4 +119,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/resetbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="リセット"
+        app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bldc_rpm" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
