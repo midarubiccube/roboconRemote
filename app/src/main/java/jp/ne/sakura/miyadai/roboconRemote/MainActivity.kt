@@ -59,7 +59,11 @@ class MainActivity : ComponentActivity() {
 
     private val SPINNER_PERIOD_MS : Long = 200
     private val SPINNER_DELAY : Long  = 0
+
     private var kaiten_position : Short = 0
+    private var updown_position : Short = 0
+    private var kakudo_position : Short = 0
+
 
     var AXIS = FloatArray(8)
 
@@ -189,13 +193,21 @@ class MainActivity : ComponentActivity() {
                     val servo = ServoTX()
                     servo.boardNum = 0
                     servo.channnel = 0
-
-                    kaiten_position =
-                        (kaiten_position + (AXIS[0] * 50.0).toInt()).toShort()
-
+                    kaiten_position = (kaiten_position + (AXIS[0] * -30.0).toInt()).toShort()
                     servo.position[0] = kaiten_position
                     servo.time[0] = 0
                     servo.speed[0] = 20
+
+                    updown_position = (updown_position + (AXIS[3] * -70.0).toInt()).toShort()
+                    servo.position[1] = updown_position
+                    servo.time[1] = 0
+                    servo.speed[1 ] = 20
+
+                    kakudo_position = (kakudo_position + (AXIS[7] * -100.0).toInt()).toShort()
+                    servo.position[2] = kakudo_position
+                    servo.time[2] = 0
+                    servo.speed[2] = 20
+                    servo.monitorFreq = if (brashSwitch.isChecked) 200 else 0
                     ServoTXpublisher.publish(servo)
                 }
             }, 100, 100
@@ -256,7 +268,7 @@ class MainActivity : ComponentActivity() {
         AXIS[4] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RTRIGGER, historyPos)
         AXIS[5] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_LTRIGGER, historyPos)
         AXIS[6] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
+        AXIS[7] = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
