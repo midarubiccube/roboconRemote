@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
     private var kaiten_position : Short = 0
     private var updown_position : Short = 0
-    private var kakudo_position : Short = 0
+    private var kakudo_position : Short = 410
 
 
     var AXIS = FloatArray(8)
@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
 
                     val bldctx = BLDCTX()
                     bldctx.priority = 0
-                    bldctx.boardNum = 5
+                    bldctx.boardNum = 7
                     bldctx.gearRatio = 1f
                     bldctx.encoderResolution = 4096
                     bldctx.monitorFlag = true
@@ -188,7 +188,7 @@ class MainActivity : ComponentActivity() {
                         bldctx.rpsTarget = 0.0f
                     }
                     BLDCTXpublisher.publish(bldctx)
-                    bldctx.boardNum = 6
+                    bldctx.boardNum = 8
                     bldctx.monitorFlag = false
                     bldctx.monitorFreq = 0
                     bldctx.rpsTarget = bldctx.rpsTarget*-1
@@ -202,7 +202,7 @@ class MainActivity : ComponentActivity() {
 
                     val servo = ServoTX()
                     servo.boardNum = 0
-                    servo.channnel = 0
+                    servo.channnel = 1
                     kaiten_position = (kaiten_position + (AXIS[0] * -200.0).toInt()).toShort()
                     servo.position[0] = kaiten_position
                     servo.time[0] = 0
