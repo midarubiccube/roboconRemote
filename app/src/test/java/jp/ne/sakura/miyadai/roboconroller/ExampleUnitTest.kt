@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconRemote
+package jp.ne.sakura.miyadai.roboconroller
 
 import org.junit.Test
 

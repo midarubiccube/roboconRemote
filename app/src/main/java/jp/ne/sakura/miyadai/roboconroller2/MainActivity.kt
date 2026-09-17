@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconRemote
+package jp.ne.sakura.miyadai.roboconroller2
 
 import android.os.Bundle
 import android.os.Handler
@@ -7,11 +7,14 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import com.longdo.mjpegviewer.MjpegView
 import geometry_msgs.msg.Twist
 import geometry_msgs.msg.Vector3
 import org.ros2.rcljava.RCLJava
@@ -41,16 +44,14 @@ class MainActivity : ComponentActivity() {
     lateinit var BLDCTXpublisher : Publisher<BLDCTX>
     lateinit var BLDCRXSubscriber: Subscription<BLDCRX>
 
-    lateinit var MotorTXpublisher : Publisher<MotorBoardTX>
-
     lateinit var ServoTXpublisher : Publisher<ServoTX>
 
-    lateinit var horizontalStickSurfaceview: HorizontalStickSurfaceview
     lateinit var rollerspeed : SeekBar
-
     lateinit var rollerSwitch : Switch
-    lateinit var brashSwitch : Switch
     lateinit var resetButton: Button
+    lateinit var streamstart : Button
+    lateinit var mjpegView: MjpegView
+    lateinit var portinput : EditText
 
     lateinit var rpm_text : TextView
     lateinit var bldc_rx: TextView
@@ -66,31 +67,40 @@ class MainActivity : ComponentActivity() {
     private var updown_position : Short = 0
     private var kakudo_position : Short = 410
 
+    private var port_num = 8080
 
     var AXIS = FloatArray(8)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        horizontalStickSurfaceview = findViewById(R.id.horizontalStickSurfaceview)
         rpm_text = findViewById(R.id.RPM_text)
         rollerspeed = findViewById(R.id.roller_speed)
         bldc_rx = findViewById(R.id.bldc_rpm)
         rollerSwitch = findViewById(R.id.switch_roller)
-        brashSwitch = findViewById(R.id.switch_brush)
         resetButton = findViewById(R.id.resetbutton)
+        mjpegView = findViewById(R.id.mjpegview)
+        streamstart = findViewById(R.id.stream_start)
+        portinput = findViewById(R.id.port_input)
+
+
         rollerspeed.min = 3000
-        rollerspeed.max = 7000
+        rollerspeed.max = 8000
         rollerspeed.progress = 3000
 
         resetButton.setOnClickListener(
             {
                 kaiten_position = 0
                 updown_position = 0
-                kakudo_position = 0
+                kakudo_position = 300
             }
         )
+
+        rollerSwitch.setOnCheckedChangeListener { button, isChecked ->
+            if (isChecked){
+                rollerspeed.progress = 3000
+            }
+        }
 
         rollerspeed.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
@@ -122,6 +132,25 @@ class MainActivity : ComponentActivity() {
                     handler.post(runnable)
                 }
             }, SPINNER_DELAY, SPINNER_PERIOD_MS)
+
+
+        streamstart.setOnClickListener {
+            mjpegView.mode = MjpegView.MODE_FIT_WIDTH
+            mjpegView.isAdjustHeight = true
+            mjpegView.supportPinchZoomAndPan = false
+            mjpegView.setUrl("http://192.168.0.38:$port_num/?action=stream")
+            mjpegView.startStream()
+        }
+
+        portinput.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                port_num = portinput.text.toString().toInt()
+                portinput.clearFocus()
+                false
+            } else {
+                false // 次の処理にイベントを渡す場合はfalseを返す
+            }
+        }
     }
 
     private fun initROS(){
@@ -137,17 +166,13 @@ class MainActivity : ComponentActivity() {
         )
 
         BLDCTXpublisher = Node.node.createPublisher(
-            BLDCTX::class.java, "BLDC/TX" //Publisherを作成
+            BLDCTX::class.java, "/BLDC/TX" //Publisherを作成
         )
 
         BLDCRXSubscriber = Node.node.createSubscription(
             BLDCRX::class.java,
             "/BLDC/RX",
             { msg -> PWR_RX(msg) }
-        )
-
-        MotorTXpublisher = Node.node.createPublisher(
-            MotorBoardTX::class.java, "/MotorBoard/TX"
         )
 
         ServoTXpublisher = Node.node.createPublisher(
@@ -170,13 +195,14 @@ class MainActivity : ComponentActivity() {
         send_timer = Timer()
         send_timer.schedule(
             object : TimerTask() {
-                override fun run() {6
+                override fun run() {
                     val msg = Twist()
                     val linear = Vector3()
                     val angular = Vector3()
 
                     val bldctx = BLDCTX()
                     bldctx.priority = 0
+                    bldctx.boardNum = 7
                     bldctx.boardNum = 7
                     bldctx.gearRatio = 1f
                     bldctx.encoderResolution = 4096
@@ -189,19 +215,15 @@ class MainActivity : ComponentActivity() {
                     }
                     BLDCTXpublisher.publish(bldctx)
                     bldctx.boardNum = 8
+                    bldctx.boardNum = 8
                     bldctx.monitorFlag = false
                     bldctx.monitorFreq = 0
                     bldctx.rpsTarget = bldctx.rpsTarget*-1
                     BLDCTXpublisher.publish(bldctx)
 
-                    val motormsg = MotorBoardTX()
-                    motormsg.boardNum = 0
-                    motormsg.mode[0] = 1
-                    motormsg.target[0] = if (brashSwitch.isChecked) 100 else 0
-                    MotorTXpublisher.publish(motormsg)
-
                     val servo = ServoTX()
                     servo.boardNum = 0
+                    servo.channnel = 1
                     servo.channnel = 1
                     kaiten_position = (kaiten_position + (AXIS[0] * -200.0).toInt()).toShort()
                     servo.position[0] = kaiten_position
@@ -211,17 +233,17 @@ class MainActivity : ComponentActivity() {
                     updown_position = (updown_position + (AXIS[3] * -200.0).toInt()).toShort()
                     servo.position[1] = updown_position
                     servo.time[1] = 0
-                    servo.speed[1 ] = 20
+                    servo.speed[1] = 20
 
-                    if (kakudo_position >=  0) {
+                    if (kakudo_position >=  300) {
                         kakudo_position = (kakudo_position + (AXIS[7] * -10.0).toInt()).toShort()
                     } else {
-                        kakudo_position = 0
+                        kakudo_position = 300
                     }
                     servo.position[2] = kakudo_position
                     servo.time[2] = 0
                     servo.speed[2] = 20
-                    servo.monitorFreq = if (brashSwitch.isChecked) 200 else 0
+                    servo.monitorFreq = (200 * AXIS[4]).toInt().toShort()
                     ServoTXpublisher.publish(servo)
                 }
             }, 100, 200
@@ -319,16 +341,8 @@ class MainActivity : ComponentActivity() {
 
                         } else {
                             rollerSwitch.isChecked = true
+                            rollerspeed.progress = 3000
                             rpm_text.text = "${rollerspeed.progress} RPM"
-                        }
-                    }
-
-                    KeyEvent.KEYCODE_BUTTON_X -> {
-                        if (brashSwitch.isChecked)
-                        {
-                            brashSwitch.isChecked = false
-                        } else {
-                            brashSwitch.isChecked = true
                         }
                     }
                     else -> {

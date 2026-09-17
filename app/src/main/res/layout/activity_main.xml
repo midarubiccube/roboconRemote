@@ -8,17 +8,6 @@
     android:orientation="vertical">
 
 
-    <jp.ne.sakura.miyadai.roboconRemote.HorizontalStickSurfaceview
-        android:id="@+id/horizontalStickSurfaceview"
-        android:layout_width="200dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="4:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/JoyStick_after_guideline"
         android:layout_width="wrap_content"
@@ -63,16 +52,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/text_roller2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="ブラシ"
-        app:layout_constraintEnd_toStartOf="@+id/switch_brush"
-        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <SeekBar
         android:id="@+id/roller_speed"
         android:layout_width="0dp"
@@ -106,19 +85,6 @@
         app:layout_constraintStart_toEndOf="@+id/text_roller"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Switch
-        android:id="@+id/switch_brush"
-        android:layout_width="68dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/swtich_track"
-        android:showText="false"
-        android:thumb="@drawable/switch_thumb"
-        android:track="@drawable/swtich_track"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <Button
         android:id="@+id/resetbutton"
         android:layout_width="wrap_content"
@@ -128,5 +94,27 @@
         app:layout_constraintEnd_toStartOf="@+id/JoyStick_before_guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bldc_rpm" />
+
+    <EditText
+        android:id="@+id/port_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="24dp"
+        android:ems="10"
+        android:inputType="number"
+        android:text="8080"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/stream_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ストリームスタート"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/JoyStick_after_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/port_input" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

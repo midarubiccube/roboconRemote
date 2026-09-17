@@ -1,4 +1,4 @@
-package jp.ne.sakura.miyadai.roboconRemote
+package jp.ne.sakura.miyadai.roboconroller2
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,14 +11,12 @@ import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.ViewGroup
-import java.lang.Math.abs
 
-class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
+class StickSurfaceview(context: Context, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback{
 
     private lateinit var params : ViewGroup.LayoutParams
@@ -31,7 +29,6 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     private var alphaStickPaint : Paint
 
     private var isTouched = false
-    private var islocked = false
 
     private lateinit var surfaceHolder : SurfaceHolder
     private val ALPHA_PAD_DEFAULT = 150
@@ -45,18 +42,8 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
             alphaBacksPaint.alpha = alpha
         }
 
-    val getX : Float
-        get() = if (isTouched || islocked) (X - width / 2) / (params.width - params.height)*2 else 0f
-
-    fun setx(x : Float)
-    {
-        islocked = true
-        X = (x * (params.width - params.height)/2) + width/2
-        val canvas = surfaceHolder.lockCanvas()
-        drawBackground(canvas)
-        drawStick(canvas)
-        surfaceHolder.unlockCanvasAndPost(canvas)
-    }
+    val sendX : Float
+        get() = if (isTouched) (X - width  / 2) / (params.width - params.height) * 2 else 0f
 
     init {
         val res = context.resources
@@ -124,21 +111,14 @@ class HorizontalStickSurfaceview(context: Context, attrs: AttributeSet?) :
     }
 
     private fun drawStick(canvas: Canvas, event: MotionEvent) {
-        if (event.action == MotionEvent.ACTION_UP) {
-            isTouched = false
-            X  = (params.width  / 2).toFloat()
-        } else {
-            if (event.x > params.width - params.height / 2){
-                X = (params.width - params.height / 2).toFloat()
-            } else if (event.x - params.height / 2 < 0){
-                X = (params.height / 2).toFloat()
-            } else {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            isTouched = true
+            if (event.x < params.width - params.height / 2 && event.x - params.height / 2 > 0){
                 X  = event.x
             }
-
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                isTouched = true
-                islocked = false
+        } else if (event.action == MotionEvent.ACTION_MOVE && isTouched) {
+            if (event.x < params.width - params.height / 2 &&  event.x - params.height / 2 > 0){
+                X  = event.x
             }
         }
         drawStick(canvas)
